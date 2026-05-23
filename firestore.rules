@@ -120,10 +120,18 @@ service cloud.firestore {
     }
 
     match /config/{configId} {
-      allow read: if configId != 'users' || isAdmin();
+      allow read: if configId != 'users' || (
+        isSignedIn() && (
+          !exists(/databases/$(database)/documents/config/users) ||
+          isAdmin()
+        )
+      );
       allow write: if isSignedIn() && (
         (configId != 'users' && isAdmin()) ||
-        (configId == 'users' && isSuperAdmin(request.auth.token.email) && !isBlocked(request.auth.token.email))
+        (configId == 'users' && (
+          (!exists(/databases/$(database)/documents/config/users) && request.auth.token.email in ['aliyusahmad2020@gmail.com', 'aliyusahmad01@gmail.com', 'student.admin@gmail.com']) ||
+          (isSuperAdmin(request.auth.token.email) && !isBlocked(request.auth.token.email))
+        ))
       );
     }
 

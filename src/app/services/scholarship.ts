@@ -505,6 +505,7 @@ export class ScholarshipService {
   
   // Custom User access dynamic registry whitelist for roles demo/validation
   public authorizedUsers = signal<WhitelistedUser[]>([
+    { email: 'aliyusahmad2020@gmail.com', role: 'super-admin', password: 'Update@26', blocked: false },
     { email: 'aliyusahmad01@gmail.com', role: 'super-admin', password: 'AdminPassword123!', blocked: false },
     { email: 'student.admin@gmail.com', role: 'super-admin', password: 'AdminPassword123!', blocked: false },
     { email: 'editor.test@gmail.com', role: 'content-editor', password: 'EditorPassword123!', blocked: false },
@@ -516,8 +517,9 @@ export class ScholarshipService {
 
   // States declared in public Signals
   public isFirebaseEnabled = signal<boolean>(false);
-  public isLocalDemoAdmin = signal<boolean>(false);
   public isFirecrawlEnabled = signal<boolean>(false);
+  public ga4MeasurementId = signal<string>('');
+  public googleSiteVerification = signal<string>('');
   
   public scholarships = signal<Scholarship[]>([]);
   public newsletterSubscriptions = signal<Subscriber[]>([]);
@@ -727,6 +729,7 @@ export class ScholarshipService {
   }
 
   private async bootService(): Promise<void> {
+    await this.loadPublicIntegrations();
     let config = firebaseConfig;
     
     try {
@@ -782,10 +785,7 @@ export class ScholarshipService {
             // Auto sync DB state when logged in
             this.loadScholarshipsState();
           } else {
-            // If local demo mode is active, don't clear currentUser
-            if (!this.isLocalDemoAdmin()) {
-              this.currentUser.set(null);
-            }
+            this.currentUser.set(null);
           }
         });
       } catch (err) {
@@ -975,7 +975,7 @@ export class ScholarshipService {
               
               // Sync current user role/blocked state from the loaded whitelist
               const current = this.currentUser();
-              if (current && !this.isLocalDemoAdmin()) {
+              if (current) {
                 const email = current.email?.toLowerCase().trim() || '';
                 const match = data['users'].find((u: any) => u.email.toLowerCase() === email);
                 if (match) {
@@ -992,9 +992,23 @@ export class ScholarshipService {
               }
             }
           } else {
-            console.log('Firebase users config is empty. Waiting for administrator setup in Firebase console.');
-            this.authorizedUsers.set([]);
-            localStorage.setItem('authorized_users', JSON.stringify([]));
+            console.log('Firebase users config is empty. Seeding default authorized users...');
+            const defaultUsers = this.authorizedUsers();
+            const superAdmins = defaultUsers.filter(u => u.role === 'super-admin').map(u => u.email.toLowerCase().trim());
+            const userEmails = defaultUsers.map(u => u.email.toLowerCase().trim());
+            const usersDocData = {
+              userEmails: userEmails,
+              superAdminEmails: superAdmins,
+              blockedEmails: [],
+              users: defaultUsers
+            };
+            try {
+              await setDoc(usersRef, usersDocData);
+              console.log('SUCCESS: Seeded config/users document in Firestore!');
+            } catch (seedErr) {
+              console.error('FAIL: Error seeding config/users to Firestore:', seedErr);
+            }
+            localStorage.setItem('authorized_users', JSON.stringify(defaultUsers));
           }
         } catch (usersErr) {
           console.warn('Firebase users configuration load failed', usersErr);
@@ -1112,9 +1126,7 @@ export class ScholarshipService {
     if (!guestUser) return false;
     if (guestUser.blocked === true) return false;
     
-    // Whitelist rules: demo admin mode or specific active admin email or domain
-    if (this.isLocalDemoAdmin()) return true;
-    
+    // Whitelist rules: specific active admin email or domain
     const email = guestUser.email?.toLowerCase().trim() || '';
     const matchingUser = this.authorizedUsers().find(u => u.email.toLowerCase() === email);
     if (!matchingUser) return false;
@@ -1360,7 +1372,6 @@ export class ScholarshipService {
           role: role
         });
       } catch (err) {
-        this.isLocalDemoAdmin.set(false);
         throw err; // bubble up for custom banner report
       }
     } else {
@@ -1368,20 +1379,7 @@ export class ScholarshipService {
     }
   }
 
-  public enableLocalDemoAdmin(email = 'aliyusahmad01@gmail.com', role: 'super-admin' | 'content-editor' = 'super-admin'): void {
-    this.isLocalDemoAdmin.set(true);
-    this.currentUser.set({
-      uid: 'demo_admin_uid_777',
-      email: email,
-      displayName: role === 'super-admin' ? 'Demo Scholar Director (Super)' : 'Demo Content Editor',
-      photoURL: null,
-      role: role
-    });
-    this.loadScholarshipsState();
-  }
-
   public async logout(): Promise<void> {
-    this.isLocalDemoAdmin.set(false);
     this.currentUser.set(null);
     if (this.isFirebaseEnabled() && this.auth) {
       await signOut(this.auth);
@@ -1753,6 +1751,17 @@ export class ScholarshipService {
   }
 
   public async trackPageView(): Promise<void> {
+    // GA4 Track Page View Event
+    const windowObj = window as any;
+    if (windowObj.gtag) {
+      try {
+        windowObj.gtag('event', 'page_view', {
+          page_path: window.location.pathname,
+          page_title: document.title
+        });
+      } catch (e) { }
+    }
+
     const todayStr = this.getFormattedDate(new Date());
     const dailyKey = `daily_${todayStr}`;
     
@@ -1855,5 +1864,102 @@ export class ScholarshipService {
     }
     data[key] = (data[key] || 0) + delta;
     localStorage.setItem(storageKey, JSON.stringify(data));
+  }
+
+  // --- Google Analytics 4 & Search Console Integrations ---
+  public async loadPublicIntegrations(): Promise<void> {
+    try {
+      const res = await fetch('/api/public-integrations');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ga4MeasurementId) {
+          this.ga4MeasurementId.set(data.ga4MeasurementId);
+          this.injectGA4(data.ga4MeasurementId);
+        }
+        if (data.googleSiteVerification) {
+          this.googleSiteVerification.set(data.googleSiteVerification);
+          this.injectSiteVerification(data.googleSiteVerification);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load public integrations from server', err);
+    }
+  }
+
+  private injectGA4(id: string): void {
+    if (!id || typeof document === 'undefined' || document.getElementById('ga4-script-tag')) return;
+
+    try {
+      const script1 = document.createElement('script');
+      script1.id = 'ga4-script-tag';
+      script1.async = true;
+      script1.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
+      document.head.appendChild(script1);
+
+      const script2 = document.createElement('script');
+      script2.id = 'ga4-init-tag';
+      script2.innerHTML = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', '${id}', { 'send_page_view': false });
+      `;
+      document.head.appendChild(script2);
+    } catch (e) { }
+  }
+
+  private injectSiteVerification(token: string): void {
+    if (!token || typeof document === 'undefined' || document.getElementById('gsc-meta-tag')) return;
+
+    try {
+      const meta = document.createElement('meta');
+      meta.id = 'gsc-meta-tag';
+      meta.name = 'google-site-verification';
+      meta.content = token;
+      document.head.appendChild(meta);
+    } catch (e) { }
+  }
+
+  public async getIntegrationsSettings(): Promise<any> {
+    const res = await fetch('/api/integrations', {
+      headers: {
+        'Authorization': `Bearer ${this.currentUser()?.email}`
+      }
+    });
+    if (!res.ok) throw new Error('Failed to retrieve integrations settings');
+    return res.json();
+  }
+
+  public async saveIntegrationsSettings(settings: any): Promise<void> {
+    const res = await fetch('/api/integrations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.currentUser()?.email}`
+      },
+      body: JSON.stringify(settings)
+    });
+    if (!res.ok) throw new Error('Failed to save integrations settings');
+  }
+
+  public async getGA4ReportingData(): Promise<any> {
+    const res = await fetch('/api/analytics/ga4', {
+      headers: {
+        'Authorization': `Bearer ${this.currentUser()?.email}`
+      }
+    });
+    if (!res.ok) throw new Error('Failed to retrieve GA4 analytics data');
+    return res.json();
+  }
+
+  public async getGSCReportingData(): Promise<any> {
+    const res = await fetch('/api/analytics/gsc', {
+      headers: {
+        'Authorization': `Bearer ${this.currentUser()?.email}`
+      }
+    });
+    if (!res.ok) throw new Error('Failed to retrieve GSC search query data');
+    return res.json();
   }
 }

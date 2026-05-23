@@ -91,32 +91,11 @@ import { AdminHeaderComponent } from '../layout/admin-header';
               <span>Authenticate with Google Account</span>
             </button>
 
-            <!-- Flat separator -->
-            <div class="flex items-center gap-3 py-1 text-[9px] uppercase font-mono text-slate-500">
-              <span class="flex-grow border-t border-white/5"></span>
-              <span>or bypass for developer testing</span>
-              <span class="flex-grow border-t border-white/5"></span>
-            </div>
-
-            <!-- Instant local simulation bypass buttons (No gradients) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <button (click)="onLocalDemoBypass('super-admin')"
-                      class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/30 text-white text-[11px] font-bold cursor-pointer transition-colors shadow-[0_0_12px_rgba(99,102,241,0.2)] focus:outline-none backdrop-blur-sm">
-                <mat-icon class="!w-4 !h-4 !text-[14px]">admin_panel_settings</mat-icon>
-                <span>Bypass: Super-Admin</span>
-              </button>
-              
-              <button (click)="onLocalDemoBypass('content-editor')"
-                      class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/10 text-slate-200 hover:text-white text-[11px] font-bold cursor-pointer transition-colors shadow-sm focus:outline-none backdrop-blur-sm">
-                <mat-icon class="!w-4 !h-4 !text-[14px] text-slate-400">edit_square</mat-icon>
-                <span>Bypass: Editor Only</span>
-              </button>
-            </div>
-
             <div class="rounded-xl bg-white/[0.02] px-4 py-3 border border-white/10 text-[10px] text-slate-400 font-mono leading-relaxed backdrop-blur-sm">
               <strong>Security Protocol Whitelist Rules:</strong> only Google Accounts or Whitelisted Users matching 
+              <code class="text-indigo-400 font-bold">aliyusahmad2020&#64;gmail.com</code>, 
               <code class="text-indigo-400 font-bold">student.admin&#64;gmail.com</code> or 
-              <code class="text-indigo-400 font-bold">aliyusahmad01&#64;gmail.com</code> are whitelisted to perform write operations as Super-Admin in the live database. Use default whitelisted credentials (e.g. email with <code class="text-indigo-450 font-semibold">AdminPassword123!</code>) or the local bypass buttons to perform instant testing.
+              <code class="text-indigo-400 font-bold">aliyusahmad01&#64;gmail.com</code> are whitelisted to perform write operations as Super-Admin in the live database. Authenticate using your pre-registered email and password credentials.
             </div>
 
           </div>
@@ -170,17 +149,10 @@ export class AdminLoginComponent implements OnInit {
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : '';
       if (errMsg === 'REAL_FIREBASE_NOT_CONFIGURED') {
-        this.errorMessage.set("Real state skipped: API keys are not loaded yet in firebase-applet-config.json. Use 'Preview Admin CMS' fallback below.");
+        this.errorMessage.set("Real state skipped: API keys are not loaded yet in firebase-applet-config.json.");
       } else {
-        this.errorMessage.set("Google authorization popup blocked or skipped by iframe sandbox settings. Use 'Preview Admin CMS' fallback below to test.");
+        this.errorMessage.set("Google authorization popup blocked or skipped by iframe sandbox settings.");
       }
     }
-  }
-
-  public onLocalDemoBypass(role: 'super-admin' | 'content-editor'): void {
-    this.errorMessage.set(null);
-    const mockEmail = role === 'super-admin' ? 'aliyusahmad01@gmail.com' : 'editor.test@gmail.com';
-    this.svc.enableLocalDemoAdmin(mockEmail, role);
-    this.router.navigate(['/adm']);
   }
 }

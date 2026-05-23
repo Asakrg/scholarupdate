@@ -5,3 +5,4 @@ dist/
 .env.local
 firebase-applet-config.json
 src/firebase-applet-config.json
+google-integrations.json

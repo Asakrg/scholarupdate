@@ -3,6 +3,7 @@ import { spawn } from 'child_process';
 import http from 'http';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -79,6 +80,267 @@ app.get('/api/firebase-config', (req, res) => {
   }
 
   res.status(404).json({ error: 'Firebase config not found' });
+});
+
+// 1c. Google Analytics 4 & Google Search Console Integration endpoints
+const CONFIG_FILE = path.join(__dirname, 'google-integrations.json');
+const whitelistedSuperAdmins = ['aliyusahmad2020@gmail.com', 'aliyusahmad01@gmail.com', 'student.admin@gmail.com'];
+
+function isAdminRequest(req) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
+  const email = authHeader.substring(7).trim().toLowerCase();
+  return whitelistedSuperAdmins.includes(email);
+}
+
+function getIntegrations() {
+  // 1. Check environment variables first
+  if (process.env.GA4_MEASUREMENT_ID) {
+    return {
+      ga4MeasurementId: process.env.GA4_MEASUREMENT_ID,
+      ga4PropertyId: process.env.GA4_PROPERTY_ID || '',
+      googleSiteVerification: process.env.GOOGLE_SITE_VERIFICATION || '',
+      gscSiteUrl: process.env.GSC_SITE_URL || '',
+      clientEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '',
+      privateKey: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || ''
+    };
+  }
+
+  // 2. Check local file
+  if (fs.existsSync(CONFIG_FILE)) {
+    try {
+      return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  return {
+    ga4MeasurementId: '',
+    ga4PropertyId: '',
+    googleSiteVerification: '',
+    gscSiteUrl: '',
+    clientEmail: '',
+    privateKey: ''
+  };
+}
+
+async function getGoogleAccessToken(clientEmail, privateKey, scopes) {
+  const header = {
+    alg: 'RS256',
+    typ: 'JWT'
+  };
+  const now = Math.floor(Date.now() / 1000);
+  const claimSet = {
+    iss: clientEmail,
+    scope: scopes.join(' '),
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600,
+    iat: now
+  };
+
+  const formattedKey = privateKey.replace(/\\n/g, '\n');
+
+  const base64Header = Buffer.from(JSON.stringify(header)).toString('base64url');
+  const base64ClaimSet = Buffer.from(JSON.stringify(claimSet)).toString('base64url');
+  const signatureInput = `${base64Header}.${base64ClaimSet}`;
+
+  const sign = crypto.createSign('RSA-SHA256');
+  sign.update(signatureInput);
+  const signature = sign.sign(formattedKey, 'base64url');
+
+  const assertion = `${signatureInput}.${signature}`;
+
+  const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${assertion}`
+  });
+
+  if (!tokenResponse.ok) {
+    const errorText = await tokenResponse.text();
+    throw new Error(`Google OAuth token exchange failed: ${errorText}`);
+  }
+
+  const tokenData = await tokenResponse.json();
+  return tokenData.access_token;
+}
+
+app.get('/api/public-integrations', (req, res) => {
+  const config = getIntegrations();
+  return res.json({
+    ga4MeasurementId: config.ga4MeasurementId || '',
+    googleSiteVerification: config.googleSiteVerification || ''
+  });
+});
+
+app.get('/api/integrations', (req, res) => {
+  if (!isAdminRequest(req)) {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const config = getIntegrations();
+  return res.json({
+    ga4MeasurementId: config.ga4MeasurementId || '',
+    ga4PropertyId: config.ga4PropertyId || '',
+    googleSiteVerification: config.googleSiteVerification || '',
+    gscSiteUrl: config.gscSiteUrl || '',
+    clientEmail: config.clientEmail || '',
+    hasPrivateKey: !!config.privateKey
+  });
+});
+
+app.post('/api/integrations', (req, res) => {
+  if (!isAdminRequest(req)) {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const { ga4MeasurementId, ga4PropertyId, googleSiteVerification, gscSiteUrl, clientEmail, privateKey } = req.body;
+  const current = getIntegrations();
+
+  const updated = {
+    ga4MeasurementId: ga4MeasurementId || '',
+    ga4PropertyId: ga4PropertyId || '',
+    googleSiteVerification: googleSiteVerification || '',
+    gscSiteUrl: gscSiteUrl || '',
+    clientEmail: clientEmail || '',
+    privateKey: privateKey || current.privateKey || ''
+  };
+
+  try {
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(updated, null, 2), 'utf-8');
+    return res.json({ success: true });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to write configuration file' });
+  }
+});
+
+app.get('/api/analytics/ga4', async (req, res) => {
+  if (!isAdminRequest(req)) {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const config = getIntegrations();
+  if (!config.clientEmail || !config.privateKey || !config.ga4PropertyId) {
+    return res.json({ configured: false, trend: [] });
+  }
+
+  try {
+    const token = await getGoogleAccessToken(config.clientEmail, config.privateKey, [
+      'https://www.googleapis.com/auth/analytics.readonly'
+    ]);
+
+    const propertyId = config.ga4PropertyId;
+    const analyticsResponse = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+        dimensions: [{ name: 'date' }],
+        metrics: [
+          { name: 'activeUsers' },
+          { name: 'screenPageViews' }
+        ]
+      })
+    });
+
+    if (!analyticsResponse.ok) {
+      const errText = await analyticsResponse.text();
+      return res.status(500).json({ error: `GA4 API error: ${errText}` });
+    }
+
+    const data = await analyticsResponse.json();
+    const rows = data.rows || [];
+    const trend = rows.map(r => {
+      const dateStr = r.dimensionValues[0].value;
+      const formattedDate = `${dateStr.substring(4, 6)}/${dateStr.substring(6, 8)}`;
+      const views = parseInt(r.metricValues[1].value, 10) || 0;
+      const activeUsers = parseInt(r.metricValues[0].value, 10) || 0;
+      return {
+        day: formattedDate,
+        views: views,
+        activeUsers: activeUsers
+      };
+    }).sort((a, b) => a.day.localeCompare(b.day));
+
+    return res.json({ configured: true, trend });
+  } catch (err) {
+    console.error('GA4 API Query failed:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/analytics/gsc', async (req, res) => {
+  if (!isAdminRequest(req)) {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const config = getIntegrations();
+  if (!config.clientEmail || !config.privateKey || !config.gscSiteUrl) {
+    return res.json({ configured: false, keywords: [] });
+  }
+
+  try {
+    const token = await getGoogleAccessToken(config.clientEmail, config.privateKey, [
+      'https://www.googleapis.com/auth/webmasters.readonly'
+    ]);
+
+    const siteUrl = encodeURIComponent(config.gscSiteUrl);
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - 14);
+
+    const pad = (num) => String(num).padStart(2, '0');
+    const formatDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+    const gscResponse = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${siteUrl}/searchAnalytics/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        startDate: formatDate(startDate),
+        endDate: formatDate(today),
+        dimensions: ['query'],
+        rowLimit: 10
+      })
+    });
+
+    if (!gscResponse.ok) {
+      const errText = await gscResponse.text();
+      return res.status(500).json({ error: `GSC API error: ${errText}` });
+    }
+
+    const data = await gscResponse.json();
+    const rows = data.rows || [];
+    const keywords = rows.map(r => ({
+      keyword: r.keys[0],
+      clicks: r.clicks,
+      impressions: r.impressions,
+      ctr: (r.ctr * 100).toFixed(1) + '%',
+      position: r.position.toFixed(1)
+    }));
+
+    return res.json({ configured: true, keywords });
+  } catch (err) {
+    console.error('GSC API Query failed:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/google:token.html', (req, res) => {
+  const token = req.params.token;
+  const config = getIntegrations();
+  const configuredToken = config.googleSiteVerification;
+  
+  if (configuredToken && configuredToken.includes(token)) {
+    return res.send(`google-site-verification: google${token}.html`);
+  }
+  res.status(404).send('Not Found');
 });
 
 // 2. Firecrawl Scraper & Search Agent API & Background Loop Helper
