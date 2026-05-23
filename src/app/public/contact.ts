@@ -11,7 +11,7 @@ import { SeoService } from '../services/seo';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Top-level Canvas — Premium Contact Page -->
-    <div id="contact-canvas" class="min-h-screen text-slate-100 flex flex-col justify-between relative overflow-hidden z-10">
+    <div id="contact-canvas" class="min-h-screen text-slate-100 flex flex-col justify-between relative overflow-x-hidden z-10">
       
       <!-- Background glowing layers -->
       <div class="absolute top-[-10%] right-[-10%] w-[45rem] h-[45rem] rounded-full bg-indigo-500/10 blur-[150px] pointer-events-none -z-10"></div>

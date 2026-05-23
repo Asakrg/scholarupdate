@@ -41,7 +41,7 @@ import { AdBannerComponent } from '../shared/ad-banner';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Top-level Canvas — Premium Glassmorphism Homepage -->
-    <div id="home-directory-canvas" class="min-h-screen text-slate-100 flex flex-col justify-between relative overflow-hidden z-10">
+    <div id="home-directory-canvas" class="min-h-screen text-slate-100 flex flex-col justify-between relative overflow-x-hidden z-10">
       
       <!-- Glow background orbs (Deep layered, animated drift) -->
       <div class="absolute top-[-10%] left-[-10%] w-[50rem] h-[50rem] rounded-full bg-indigo-500/15 blur-[180px] pointer-events-none -z-10 orb-drift-1"></div>

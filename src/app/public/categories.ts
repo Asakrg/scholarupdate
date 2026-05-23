@@ -13,7 +13,7 @@ import { ScholarshipCardComponent } from './components/scholarship-card';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Categories Canvas Layout with background glass blobs (no gradient colors) -->
-    <div id="categories-root-desk" class="min-h-screen text-slate-100 flex flex-col justify-between relative overflow-hidden z-10">
+    <div id="categories-root-desk" class="min-h-screen text-slate-100 flex flex-col justify-between relative overflow-x-hidden z-10">
       
       <!-- Glow background glass blobs (Solid color circular layers with extreme blur, no gradients allowed) -->
       <div class="absolute top-[-10%] left-[-10%] w-[45rem] h-[45rem] rounded-full bg-indigo-500/15 blur-[150px] pointer-events-none -z-10"></div>
