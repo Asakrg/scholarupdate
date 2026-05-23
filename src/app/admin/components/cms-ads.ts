@@ -141,115 +141,6 @@ import { ScholarshipService, AdProvider, AdEarningsData } from '../../services/s
                     </button>
                   </div>
 
-                  <!-- Placements Config (Only active when enabled) -->
-                  <div class="space-y-3" [ngClass]="{'opacity-100': prov.enabled, 'opacity-40 pointer-events-none select-none': !prov.enabled}">
-                    <span class="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest block mb-1">Active Placements</span>
-                    
-                    <!-- Leaderboard placement toggle -->
-                    <div class="flex items-center justify-between text-xs py-1">
-                      <span class="text-slate-350">Leaderboard Banner (Public top)</span>
-                      <input type="checkbox" [checked]="prov.placements.leaderboard" 
-                             (change)="togglePlacement(prov.id, 'leaderboard', $any($event.target).checked)"
-                             class="rounded border-white/10 bg-slate-900 text-indigo-600 focus:ring-indigo-500/50 cursor-pointer h-4 w-4" />
-                    </div>
-
-                    <!-- Sidebar placement toggle -->
-                    <div class="flex items-center justify-between text-xs py-1">
-                      <span class="text-slate-350">Sidebar Slot (Details page)</span>
-                      <input type="checkbox" [checked]="prov.placements.sidebar" 
-                             (change)="togglePlacement(prov.id, 'sidebar', $any($event.target).checked)"
-                             class="rounded border-white/10 bg-slate-900 text-indigo-600 focus:ring-indigo-500/50 cursor-pointer h-4 w-4" />
-                    </div>
-
-                    <!-- In-feed placement toggle -->
-                    <div class="flex items-center justify-between text-xs py-1">
-                      <span class="text-slate-350">In-Feed Grid Slot (Homepage)</span>
-                      <input type="checkbox" [checked]="prov.placements.inFeed" 
-                             (change)="togglePlacement(prov.id, 'inFeed', $any($event.target).checked)"
-                             class="rounded border-white/10 bg-slate-900 text-indigo-600 focus:ring-indigo-500/50 cursor-pointer h-4 w-4" />
-                    </div>
-                  </div>
-
-                  <!-- Credentials Configuration (Visible/Editable for all) -->
-                  <div class="space-y-3 mt-4 pt-3 border-t border-white/5">
-                    <span class="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest block mb-1">Configuration Credentials</span>
-                    
-                    @if (prov.id === 'adsense') {
-                      <div class="space-y-2">
-                        <div class="flex flex-col gap-1">
-                          <label class="text-[10px] text-slate-400 font-mono">Publisher ID (ca-pub-*)</label>
-                          <input type="text" [value]="prov.credentials?.publisherId || ''" 
-                                 (input)="updateCredential(prov.id, 'publisherId', $any($event.target).value)"
-                                 placeholder="e.g. ca-pub-1234567890"
-                                 class="w-full bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:border-indigo-500/50 focus:ring-0 focus:outline-none" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                          <label class="text-[10px] text-slate-400 font-mono">Ad Slot ID</label>
-                          <input type="text" [value]="prov.credentials?.slotId || ''" 
-                                 (input)="updateCredential(prov.id, 'slotId', $any($event.target).value)"
-                                 placeholder="e.g. 9876543210"
-                                 class="w-full bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:border-indigo-500/50 focus:ring-0 focus:outline-none" />
-                        </div>
-                      </div>
-                    }
-
-                    @if (prov.id === 'ezoic') {
-                      <div class="space-y-2">
-                        <div class="flex flex-col gap-1">
-                          <label class="text-[10px] text-slate-400 font-mono">Publisher ID</label>
-                          <input type="text" [value]="prov.credentials?.publisherId || ''" 
-                                 (input)="updateCredential(prov.id, 'publisherId', $any($event.target).value)"
-                                 placeholder="e.g. 12345"
-                                 class="w-full bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:border-indigo-500/50 focus:ring-0 focus:outline-none" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                          <label class="text-[10px] text-slate-400 font-mono">Site ID</label>
-                          <input type="text" [value]="prov.credentials?.siteId || ''" 
-                                 (input)="updateCredential(prov.id, 'siteId', $any($event.target).value)"
-                                 placeholder="e.g. 54321"
-                                 class="w-full bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:border-indigo-500/50 focus:ring-0 focus:outline-none" />
-                        </div>
-                      </div>
-                    }
-
-                    @if (prov.id === 'mediavine') {
-                      <div class="space-y-2">
-                        <div class="flex flex-col gap-1">
-                          <label class="text-[10px] text-slate-400 font-mono">Publisher ID / Account ID</label>
-                          <input type="text" [value]="prov.credentials?.publisherId || ''" 
-                                 (input)="updateCredential(prov.id, 'publisherId', $any($event.target).value)"
-                                 placeholder="e.g. mv-1029"
-                                 class="w-full bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:border-indigo-500/50 focus:ring-0 focus:outline-none" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                          <label class="text-[10px] text-slate-400 font-mono">Site ID</label>
-                          <input type="text" [value]="prov.credentials?.siteId || ''" 
-                                 (input)="updateCredential(prov.id, 'siteId', $any($event.target).value)"
-                                 placeholder="e.g. my-awesome-site"
-                                 class="w-full bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:border-indigo-500/50 focus:ring-0 focus:outline-none" />
-                        </div>
-                      </div>
-                    }
-
-                    @if (prov.id === 'adsterra') {
-                      <div class="space-y-2">
-                        <div class="flex flex-col gap-1">
-                          <label class="text-[10px] text-slate-400 font-mono">Publisher ID / Username</label>
-                          <input type="text" [value]="prov.credentials?.publisherId || ''" 
-                                 (input)="updateCredential(prov.id, 'publisherId', $any($event.target).value)"
-                                 placeholder="e.g. adsterra_user"
-                                 class="w-full bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:border-indigo-500/50 focus:ring-0 focus:outline-none" />
-                        </div>
-                        <div class="flex flex-col gap-1">
-                          <label class="text-[10px] text-slate-400 font-mono">Banner / Placement ID</label>
-                          <input type="text" [value]="prov.credentials?.bannerId || ''" 
-                                 (input)="updateCredential(prov.id, 'bannerId', $any($event.target).value)"
-                                 placeholder="e.g. banner_300x250_abc"
-                                 class="w-full bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:border-indigo-500/50 focus:ring-0 focus:outline-none" />
-                        </div>
-                      </div>
-                    }
-                  </div>
 
                 </div>
               </div>
@@ -363,31 +254,7 @@ export class CmsAdsComponent {
     this.svc.updateAdProviderSettings(providerId, { enabled });
   }
 
-  // Toggle dynamic placement configurations on active network
-  public togglePlacement(providerId: string, placement: 'leaderboard' | 'sidebar' | 'inFeed', active: boolean): void {
-    const current = this.svc.adProviders().find(p => p.id === providerId);
-    if (!current) return;
-    
-    const nextPlacements = {
-      ...current.placements,
-      [placement]: active
-    };
-    
-    this.svc.updateAdProviderSettings(providerId, { placements: nextPlacements });
-  }
 
-  // Update provider credential field (saves silently without toast on typing)
-  public updateCredential(providerId: string, fieldName: string, value: string): void {
-    const current = this.svc.adProviders().find(p => p.id === providerId);
-    if (!current) return;
-
-    const nextCredentials = {
-      ...current.credentials,
-      [fieldName]: value
-    };
-
-    this.svc.updateAdProviderSettings(providerId, { credentials: nextCredentials }, false);
-  }
 
   // Helper metrics calculator
   public getDailyAverage(): number {

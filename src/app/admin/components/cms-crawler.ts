@@ -9,37 +9,14 @@ import { ScholarshipService, Scholarship } from '../../services/scholarship';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './cms-crawler.html'
 })
-export class CmsCrawlerComponent implements OnInit, OnDestroy {
+export class CmsCrawlerComponent {
   public svc = inject(ScholarshipService);
-  private pollInterval: any;
 
   @Output() reviewDraft = new EventEmitter<Scholarship>();
 
   // Continent & Opportunity Type Selection Signals
   public selectedContinent = signal<string>('Global');
   public selectedType = signal<string>('Fully-Funded');
-
-  public ngOnInit(): void {
-    this.svc.fetchAutoDrafts();
-    // Poll every 30 seconds for background updates
-    this.pollInterval = setInterval(() => {
-      this.svc.fetchAutoDrafts();
-    }, 30000);
-  }
-
-  public ngOnDestroy(): void {
-    if (this.pollInterval) {
-      clearInterval(this.pollInterval);
-    }
-  }
-
-  public async approveAutoDraft(opp: Scholarship): Promise<void> {
-    await this.svc.approveAutoDraft(opp);
-  }
-
-  public async dismissAutoDraft(id: string): Promise<void> {
-    await this.svc.dismissAutoDraft(id);
-  }
 
   // Crawler log terminal signal
   public terminalLogs = signal<{ time: string; type: 'firecrawl' | 'computer-use' | 'system'; text: string }[]>([]);

@@ -3,23 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { ScholarshipService, Scholarship } from '../../services/scholarship';
 
-function extractClientEmail(jsonStr: string): string {
-  try {
-    const obj = JSON.parse(jsonStr);
-    return obj.client_email || '';
-  } catch {
-    return '';
-  }
-}
 
-function extractPrivateKey(jsonStr: string): string {
-  try {
-    const obj = JSON.parse(jsonStr);
-    return obj.private_key || '';
-  } catch {
-    return jsonStr.trim();
-  }
-}
 
 @Component({
   selector: 'app-cms-charts',
@@ -231,69 +215,6 @@ function extractPrivateKey(jsonStr: string): string {
 
     </section>
 
-    <!-- Google API Integrations Settings Panel (Collapsible / Dynamic) -->
-    <section class="mb-8 border border-white/10 bg-slate-950/65 backdrop-blur-xl rounded-2xl p-6 shadow-xl relative overflow-hidden">
-      <div class="absolute -top-10 -right-10 w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-5">
-        <div class="flex items-center gap-2">
-          <mat-icon class="!w-4 !h-4 !text-[18px] text-indigo-400">dns</mat-icon>
-          <h3 class="text-xs font-mono font-bold text-slate-250 uppercase tracking-widest">
-            Google GA4 & Search Console Settings
-          </h3>
-        </div>
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[9px] font-mono font-bold uppercase tracking-wider" 
-              [class.bg-emerald-950]="isGoogleActive()" [class.border-emerald-800]="isGoogleActive()" [class.text-emerald-300]="isGoogleActive()"
-              [class.bg-slate-900]="!isGoogleActive()" [class.border-slate-800]="!isGoogleActive()" [class.text-slate-400]="!isGoogleActive()">
-          <span class="h-1.5 w-1.5 rounded-full" [class.bg-emerald-500]="isGoogleActive()" [class.bg-slate-500]="!isGoogleActive()"></span>
-          <span>{{ isGoogleActive() ? 'Live Reporting Active' : 'Cache Simulation Mode' }}</span>
-        </span>
-      </div>
-
-      <form (submit)="saveSettings($event, ga4MeasIdInput, ga4PropIdInput, gscVerifyInput, gscSiteUrlInput, saKeyInput)" class="space-y-4 relative z-10">
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div>
-            <label class="block text-[9px] font-mono font-bold text-slate-450 uppercase tracking-wider mb-1">GA4 Measurement ID</label>
-            <input type="text" #ga4MeasIdInput [value]="ga4MeasurementId()" placeholder="G-XXXXXXXXXX"
-                   class="w-full px-3 py-2.5 text-xs rounded-xl border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 font-sans focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all" />
-          </div>
-          <div>
-            <label class="block text-[9px] font-mono font-bold text-slate-450 uppercase tracking-wider mb-1">GA4 Property ID</label>
-            <input type="text" #ga4PropIdInput [value]="ga4PropertyId()" placeholder="312345678"
-                   class="w-full px-3 py-2.5 text-xs rounded-xl border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 font-sans focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all" />
-          </div>
-          <div>
-            <label class="block text-[9px] font-mono font-bold text-slate-450 uppercase tracking-wider mb-1">GSC Verification Token</label>
-            <input type="text" #gscVerifyInput [value]="gscVerificationToken()" placeholder="google-site-verification-token"
-                   class="w-full px-3 py-2.5 text-xs rounded-xl border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 font-sans focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all" />
-          </div>
-          <div>
-            <label class="block text-[9px] font-mono font-bold text-slate-450 uppercase tracking-wider mb-1">GSC Domain/Site URL</label>
-            <input type="text" #gscSiteUrlInput [value]="gscSiteUrl()" placeholder="sc-domain:ecopulse.app"
-                   class="w-full px-3 py-2.5 text-xs rounded-xl border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 font-sans focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all" />
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-[9px] font-mono font-bold text-slate-450 uppercase tracking-wider mb-1">Google Service Account Private Key JSON</label>
-          <textarea #saKeyInput rows="3" placeholder='{ "type": "service_account", "project_id": "...", "private_key": "...", ... }'
-                    class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"></textarea>
-          <p class="text-[9px] text-slate-500 mt-1 leading-relaxed">
-            Provide the service account key JSON downloaded from Google Cloud Console. Leave empty to keep existing key.
-            <span class="text-indigo-400 font-bold block mt-0.5">Authentication Security: Credentials are written securely to the local server configuration file (gitignored) and are never exposed publicly.</span>
-          </p>
-        </div>
-
-        <div class="flex justify-end gap-2.5">
-          <button type="submit" [disabled]="saving()"
-                  class="inline-flex items-center gap-1.5 px-4.5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-900 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/30 transition-all cursor-pointer select-none">
-            <mat-icon class="!w-4 !h-4 !text-[15px] animate-spin" *ngIf="saving()">sync</mat-icon>
-            <mat-icon class="!w-4 !h-4 !text-[15px]" *ngIf="!saving()">save</mat-icon>
-            <span>{{ saving() ? 'Saving settings...' : 'Save Google Credentials' }}</span>
-          </button>
-        </div>
-      </form>
-    </section>
   `
 })
 export class CmsChartsComponent implements OnInit {
@@ -302,12 +223,7 @@ export class CmsChartsComponent implements OnInit {
   public activePointIndex = signal<number | null>(null);
   public activeTab = signal<'keywords' | 'activity'>('keywords');
 
-  // Integrations settings signals
-  public ga4MeasurementId = signal<string>('');
-  public ga4PropertyId = signal<string>('');
-  public gscVerificationToken = signal<string>('');
-  public gscSiteUrl = signal<string>('');
-  public saving = signal<boolean>(false);
+
 
   // Live reporting metrics signals
   public ga4Data = signal<any>(null);
@@ -397,20 +313,7 @@ export class CmsChartsComponent implements OnInit {
   });
 
   public ngOnInit(): void {
-    this.loadSettings();
     this.loadAnalytics();
-  }
-
-  public async loadSettings(): Promise<void> {
-    try {
-      const data = await this.svc.getIntegrationsSettings();
-      this.ga4MeasurementId.set(data.ga4MeasurementId || '');
-      this.ga4PropertyId.set(data.ga4PropertyId || '');
-      this.gscVerificationToken.set(data.googleSiteVerification || '');
-      this.gscSiteUrl.set(data.gscSiteUrl || '');
-    } catch (e) {
-      console.warn('Failed to load integrations settings', e);
-    }
   }
 
   public async loadAnalytics(): Promise<void> {
@@ -425,44 +328,7 @@ export class CmsChartsComponent implements OnInit {
     } catch (e) { }
   }
 
-  public async saveSettings(
-    event: Event, 
-    measId: HTMLInputElement, 
-    propId: HTMLInputElement, 
-    verifyToken: HTMLInputElement, 
-    siteUrl: HTMLInputElement, 
-    privateKey: HTMLTextAreaElement
-  ): Promise<void> {
-    event.preventDefault();
-    this.saving.set(true);
 
-    const clientEmail = privateKey.value ? extractClientEmail(privateKey.value) : '';
-    const formattedPrivateKey = privateKey.value ? extractPrivateKey(privateKey.value) : '';
-
-    const payload: any = {
-      ga4MeasurementId: measId.value.trim(),
-      ga4PropertyId: propId.value.trim(),
-      googleSiteVerification: verifyToken.value.trim(),
-      gscSiteUrl: siteUrl.value.trim()
-    };
-
-    if (privateKey.value) {
-      payload.clientEmail = clientEmail;
-      payload.privateKey = formattedPrivateKey;
-    }
-
-    try {
-      await this.svc.saveIntegrationsSettings(payload);
-      this.svc.showToast('success', 'Credentials Saved', 'Successfully updated Google GA4 and Search Console settings.');
-      privateKey.value = '';
-      await this.loadSettings();
-      await this.loadAnalytics();
-    } catch (err) {
-      this.svc.showToast('error', 'Update Failed', err instanceof Error ? err.message : 'Failed to save settings.');
-    } finally {
-      this.saving.set(false);
-    }
-  }
 
   public getBarWidth(views: number): number {
     const list = this.topScholarships();
