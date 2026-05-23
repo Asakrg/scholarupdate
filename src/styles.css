@@ -385,6 +385,7 @@ html.light-mode body,
 .light-mode .scholarship-card,
 .light-mode .bg-slate-950,
 .light-mode .bg-slate-950\/95,
+.light-mode .bg-slate-900\/95,
 .light-mode .bg-slate-950\/80,
 .light-mode .bg-slate-950\/75,
 .light-mode .bg-slate-950\/70,
@@ -697,7 +698,8 @@ html.light-mode body,
 .light-mode .bg-slate-950\/80 {
   background-color: rgba(15, 23, 42, 0.25) !important;
 }
-.light-mode .bg-slate-950\/95 {
+.light-mode .bg-slate-950\/95,
+.light-mode .bg-slate-900\/95 {
   background-color: rgba(255, 255, 255, 0.92) !important;
   color: #0f172a !important;
 }

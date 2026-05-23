@@ -105,7 +105,7 @@ import { ScholarshipService, Scholarship } from '../../services/scholarship';
 
             <!-- Absolute Hover Tooltip inside Box -->
             @if (activePointIndex() !== null) {
-              <div class="absolute top-2 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md text-white rounded-lg px-2.5 py-1 text-[10px] font-mono shadow-md flex items-center gap-1.5 border border-white/10 transition-all z-10">
+              <div class="absolute top-2 left-1/2 -translate-x-1/2 bg-slate-950/95 backdrop-blur-md text-white rounded-lg px-2.5 py-1 text-[10px] font-mono shadow-md flex items-center gap-1.5 border border-white/10 transition-all z-10">
                 <span class="font-bold text-slate-300">{{ sevenDayTrend()[activePointIndex()!].label }}:</span>
                 <span class="font-extrabold" [class.text-emerald-400]="isGA4Active()" [class.text-indigo-400]="!isGA4Active()">
                   {{ sevenDayTrend()[activePointIndex()!].views | number }} {{ isGA4Active() ? 'Pageviews' : 'v' }}
