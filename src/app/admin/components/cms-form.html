@@ -1,0 +1,445 @@
+<!-- Editor panel Form overlay container (Premium Dark Glassmorphic Theme) -->
+<section id="cms-editor-form" class="border border-white/10 bg-slate-950/40 backdrop-blur-xl rounded-2xl p-6 shadow-2xl mb-8 text-slate-200">
+  
+  <!-- Header Bar -->
+  <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+    <h2 class="text-base font-display font-bold text-slate-100 flex items-center gap-1.5">
+      <mat-icon class="!w-5 !h-5 !text-[20px] text-indigo-400">
+        {{ isEditing() ? 'edit_note' : 'add_circle_outline' }}
+      </mat-icon>
+      <span>{{ isEditing() ? 'Modify Post: ' + editingId() : 'Write New Scholarly Article' }}</span>
+    </h2>
+    <button (click)="closeForm()" class="text-slate-400 hover:text-slate-200 cursor-pointer focus:outline-none transition-colors">
+      <mat-icon class="!w-5 !h-5 font-bold">close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Form Layout: Re-arranged into clean columns/groupings -->
+  <div class="space-y-6">
+    
+    <!-- 4-Column Grid for Form Attributes -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      
+      <!-- COLUMN 1: Basic Details -->
+      <div class="space-y-4 border-r border-white/5 pr-0 lg:pr-4">
+        <div class="flex items-center gap-1.5 mb-2 select-none">
+          <mat-icon class="!w-4 !h-4 !text-[16px] text-indigo-400 block">info</mat-icon>
+          <h3 class="text-xs font-mono font-bold text-slate-350 uppercase tracking-widest">1. Basic Details</h3>
+        </div>
+
+        <div>
+          <label for="cms-f-title" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Scholarship Title *</label>
+          <input id="cms-f-title" type="text" #fTitle [value]="formTitle()" (input)="formTitle.set(fTitle.value)"
+                 placeholder="e.g. Cambridge Trust Fellowship"
+                 class="w-full px-3.5 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+        </div>
+
+        <div>
+          <label for="cms-f-id" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Unique ID Slug *</label>
+          <input id="cms-f-id" type="text" #fId [value]="formId()" (input)="formId.set(fId.value)" [disabled]="isEditing()"
+                 placeholder="e.g. cambridge-trust-fellowship"
+                 class="w-full px-3.5 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 disabled:bg-slate-950/60 disabled:text-slate-500" />
+          <p class="text-[9px] text-slate-500 mt-1 font-mono leading-tight">Lowercase letters, numbers, hyphens. Immutable after creation.</p>
+        </div>
+
+        <div>
+          <label for="cms-f-cat" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Funding Category *</label>
+          <select id="cms-f-cat" #fCat [value]="formCategory()" (change)="formCategory.set(fCat.value)"
+                  class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 cursor-pointer">
+            @for (cat of svc.categories(); track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- COLUMN 2: Funding & Key Params -->
+      <div class="space-y-4 border-r border-white/5 pr-0 lg:pr-4">
+        <div class="flex items-center gap-1.5 mb-2 select-none">
+          <mat-icon class="!w-4 !h-4 !text-[16px] text-indigo-400 block">payments</mat-icon>
+          <h3 class="text-xs font-mono font-bold text-slate-350 uppercase tracking-widest">2. Funding Specs</h3>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="cms-f-amt" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Amount ($) *</label>
+            <input id="cms-f-amt" type="number" #fAmt [value]="formAmount()" (input)="formAmount.set(+fAmt.value)"
+                   placeholder="e.g. 15000"
+                   class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+          </div>
+          <div>
+            <label for="cms-f-amtdisp" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Display Label *</label>
+            <input id="cms-f-amtdisp" type="text" #fAmtDisp [value]="formAmountDisplay()" (input)="formAmountDisplay.set(fAmtDisp.value)"
+                   placeholder="e.g. $15,000 / Yr"
+                   class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+          </div>
+        </div>
+
+        <div>
+          <label for="cms-f-deadline" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Deadline Date *</label>
+          <input id="cms-f-deadline" type="date" #fDeadline [value]="formDeadline()" (input)="formDeadline.set(fDeadline.value)"
+                 class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+        </div>
+
+        <div>
+          <label for="cms-f-url" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Apply Link / Official URL *</label>
+          <input id="cms-f-url" type="url" #fUrl [value]="formApplyUrl()" (input)="formApplyUrl.set(fUrl.value)"
+                 placeholder="https://example.com/apply-now"
+                 class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+        </div>
+      </div>
+
+      <!-- COLUMN 3: Regional Scope & Advanced Taxonomy -->
+      <div class="space-y-4 border-r border-white/5 pr-0 lg:pr-4">
+        <div class="flex items-center gap-1.5 mb-2 select-none">
+          <mat-icon class="!w-4 !h-4 !text-[16px] text-indigo-400 block">explore</mat-icon>
+          <h3 class="text-xs font-mono font-bold text-slate-350 uppercase tracking-widest">3. Taxonomy Scope</h3>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="cms-f-country" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Country/Region</label>
+            <select id="cms-f-country" #fCountry [value]="formCountry()" (change)="formCountry.set(fCountry.value)"
+                    class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 cursor-pointer">
+              <option value="">— Select —</option>
+              @for (opt of countryOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label for="cms-f-field" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Field of Study</label>
+            <select id="cms-f-field" #fField [value]="formField()" (change)="formField.set(fField.value)"
+                    class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 cursor-pointer">
+              <option value="">— Select —</option>
+              @for (opt of fieldOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="cms-f-funding" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Funding Type</label>
+            <select id="cms-f-funding" #fFunding [value]="formFundingType()" (change)="formFundingType.set(fFunding.value)"
+                    class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 cursor-pointer">
+              <option value="">— Select —</option>
+              @for (opt of fundingTypeOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label for="cms-f-demo" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Demographic</label>
+            <select id="cms-f-demo" #fDemo [value]="formDemographic()" (change)="formDemographic.set(fDemo.value)"
+                    class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 cursor-pointer">
+              <option value="">— Select —</option>
+              @for (opt of demographicOptions; track opt) {
+                <option [value]="opt">{{ opt }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="cms-f-eligibility" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Eligibility Criteria *</label>
+          <input id="cms-f-eligibility" type="text" #fEligibility [value]="formEligibility()" (input)="formEligibility.set(fEligibility.value)"
+                 placeholder="e.g. Min 3.5 GPA, International"
+                 class="w-full px-3.5 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+        </div>
+      </div>
+
+      <!-- COLUMN 4: Visual Cover & Status settings -->
+      <div class="space-y-4">
+        <div class="flex items-center gap-1.5 mb-2 select-none">
+          <mat-icon class="!w-4 !h-4 !text-[16px] text-indigo-400 block">image</mat-icon>
+          <h3 class="text-xs font-mono font-bold text-slate-350 uppercase tracking-widest">4. Cover & Status</h3>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Cover Image Asset</label>
+          <div (drop)="onFileDropped($event)" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+               [ngClass]="{'border-indigo-500 bg-slate-950/60': dragOverActive(), 'bg-slate-950/20': !dragOverActive()}"
+               class="group relative border border-dashed border-white/10 hover:border-indigo-500/50 rounded-xl p-3 transition-all duration-150 flex flex-col justify-center items-center min-h-[90px] select-none cursor-pointer">
+            
+            <input type="file" (change)="onFileSelected($event)" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" />
+
+            @if (isUploadingImage()) {
+              <div class="flex flex-col items-center py-1">
+                <div class="h-5 w-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-[9px] font-semibold text-indigo-300 mt-2 font-mono">Uploading...</span>
+              </div>
+            } @else if (formImageUrl()) {
+              <div class="relative w-full h-[66px] rounded-lg overflow-hidden flex items-center justify-between gap-3 p-1.5 bg-slate-900/80 border border-white/5">
+                <img [src]="formImageUrl()" alt="" class="h-full w-14 object-cover rounded-md flex-shrink-0" referrerpolicy="no-referrer" />
+                <div class="min-w-0 flex-grow text-left">
+                  <span class="text-[8px] font-mono text-slate-500 block uppercase font-bold">Image Cover Url</span>
+                  <span class="text-[9px] text-slate-350 font-mono truncate block" [title]="formImageUrl()">{{ formImageUrl() }}</span>
+                  <button type="button" (click)="formImageUrl.set(''); $event.preventDefault(); $event.stopPropagation();" 
+                          class="text-rose-400 hover:text-rose-300 font-bold flex items-center gap-0.5 cursor-pointer z-20 text-[9px] mt-1">
+                    <mat-icon class="!w-3 !h-3 !text-[11px]">delete</mat-icon>
+                    <span>Clear</span>
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="flex flex-col items-center py-2 text-center">
+                <mat-icon class="!w-7 !h-7 !text-[28px] text-slate-600 group-hover:text-indigo-400 transition-colors mb-1">cloud_upload</mat-icon>
+                <p class="text-[10px] font-bold text-slate-300 group-hover:text-indigo-400 transition-colors">Drag or browse image</p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="cms-f-status" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Status</label>
+            <select id="cms-f-status" #fStatus [value]="formStatus()" (change)="formStatus.set(fStatus.value === 'draft' ? 'draft' : 'published')"
+                    class="w-full px-2 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 cursor-pointer">
+              <option value="published">Published</option>
+              <option value="draft">Draft Saved</option>
+            </select>
+          </div>
+          <div>
+            <label for="cms-f-tags" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Meta Tags</label>
+            <input id="cms-f-tags" type="text" #fTags [value]="formTagsRaw()" (input)="formTagsRaw.set(fTags.value)"
+                   placeholder="e.g. UK, STEM"
+                   class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+          </div>
+        </div>
+
+        <!-- Featured Switch Toggle / Staff Pick -->
+        <div class="flex items-center justify-between p-2 rounded-xl bg-indigo-950/20 border border-indigo-900/30">
+          <div class="flex items-center gap-1.5">
+            <mat-icon class="!w-4 !h-4 !text-[15px] text-amber-400">star</mat-icon>
+            <span class="text-[10px] font-semibold text-slate-300 font-mono">Featured Pick</span>
+          </div>
+          <button type="button" (click)="formFeatured.set(!formFeatured())"
+                  [class]="'relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ' + 
+                           (formFeatured() ? 'bg-indigo-500' : 'bg-slate-800 border border-white/10')">
+            <span [class]="'inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow ' + 
+                           (formFeatured() ? 'translate-x-4.5' : 'translate-x-0.5')"></span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- EXCERPT / TEASER & SEO ENGINES (Row below columns) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2 border-t border-white/5">
+      
+      <!-- Teaser input (Takes 1 Col) -->
+      <div class="lg:col-span-1 space-y-4">
+        <div>
+          <label for="cms-f-excerpt" class="block text-[10px] font-mono font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Introduction Excerpt (Teaser) *</label>
+          <textarea id="cms-f-excerpt" rows="4" #fExcerpt [value]="formExcerpt()" (input)="formExcerpt.set(fExcerpt.value)"
+                    placeholder="Provide a concise summary / two-sentence hook about this scholarship to showcase on dashboard lists..."
+                    class="w-full px-3 py-2.5 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 h-[104px] resize-none"></textarea>
+        </div>
+      </div>
+
+      <!-- SEO Meta Engine (Takes 2 Cols) -->
+      <div class="lg:col-span-2">
+        <div class="bg-slate-900/30 border border-white/10 hover:bg-slate-900/50 rounded-xl p-4 transition-colors">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3 select-none">
+            <div class="flex items-center gap-1.5">
+              <mat-icon class="!w-4 !h-4 !text-[16px] text-indigo-400 block">search</mat-icon>
+              <h3 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-widest">SEO Meta Engine</h3>
+            </div>
+            <button type="button" (click)="generateSeoMetadata()"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-950/60 hover:bg-indigo-900 text-indigo-300 rounded-lg text-[9px] font-mono font-bold transition-all border border-indigo-500/35 cursor-pointer shadow-sm active:scale-95">
+              <mat-icon class="!w-3.5 !h-3.5 !text-[13px] text-indigo-400">auto_awesome</mat-icon>
+              <span>Auto-Generate Meta</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="cms-seo-title" class="block text-[9px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Meta Title Tag</label>
+              <input id="cms-seo-title" type="text" #fMetaTitle [value]="formMetaTitle()" (input)="formMetaTitle.set(fMetaTitle.value)"
+                     placeholder="e.g. Rhodes Trust Scholarship | Study in Oxford"
+                     class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50" />
+            </div>
+
+            <div>
+              <label for="cms-seo-desc" class="block text-[9px] font-mono font-semibold text-slate-400 mb-1 uppercase tracking-wider">Meta Description Tag</label>
+              <textarea id="cms-seo-desc" rows="1" #fMetaDesc [value]="formMetaDescription()" (input)="formMetaDescription.set(fMetaDesc.value)"
+                        placeholder="e.g. Apply for the prestigious 2026 Rhodes program..."
+                        class="w-full px-3 py-2 text-xs rounded-lg border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 h-[32px] resize-none"></textarea>
+            </div>
+          </div>
+          <p class="text-[9px] text-slate-500 mt-2 font-sans leading-none">Custom meta parameters optimized for Google index rankings and page previews.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Editorial Details Content (Rich WYSIWYG Editor) -->
+    <div class="space-y-2 pt-2 border-t border-white/5">
+      <label class="block text-xs font-mono font-semibold text-slate-400 flex items-center justify-between">
+        <span class="uppercase tracking-wider">Editorial Details Content *</span>
+        <span class="text-[9px] text-slate-500 font-normal uppercase tracking-wider">Visual Editor Workspace</span>
+      </label>
+      
+      <div class="border border-white/10 rounded-xl overflow-hidden bg-slate-950/60 backdrop-blur-sm shadow-inner focus-within:ring-1 focus-within:ring-indigo-500/50 transition-all">
+        <!-- Toolbar header -->
+        <div class="flex flex-wrap items-center justify-between px-3 py-2 border-b border-white/10 bg-slate-900/60 gap-2 select-none">
+          <!-- Format buttons -->
+          <div class="flex items-center gap-1 select-none">
+            <button type="button" (click)="execEditorCommand('bold')" title="Bold"
+                    class="p-1 px-2 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer">
+              <mat-icon class="!w-4 !h-4 !text-[15px] font-bold">format_bold</mat-icon>
+              <span class="hidden sm:inline">Bold</span>
+            </button>
+            
+            <button type="button" (click)="execEditorCommand('formatBlock', '<h3>')" title="Heading"
+                    class="p-1 px-2 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer">
+              <mat-icon class="!w-4 !h-4 !text-[15px]">title</mat-icon>
+              <span class="hidden sm:inline">Heading</span>
+            </button>
+
+            <button type="button" (click)="execEditorCommand('insertUnorderedList')" title="Bullet List"
+                    class="p-1 px-2 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex items-center justify-center gap-1 text-[11px] font-semibold cursor-pointer">
+              <mat-icon class="!w-4 !h-4 !text-[15px]">format_list_bulleted</mat-icon>
+              <span class="hidden sm:inline">Bullets</span>
+            </button>
+
+            <button type="button" (click)="execEditorCommand('undo')" title="Undo"
+                    class="p-1 px-1.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-all cursor-pointer flex items-center justify-center">
+              <mat-icon class="!w-4 !h-4 !text-[15px]">undo</mat-icon>
+            </button>
+
+            <button type="button" (click)="execEditorCommand('redo')" title="Redo"
+                    class="p-1 px-1.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-all cursor-pointer flex items-center justify-center">
+              <mat-icon class="!w-4 !h-4 !text-[15px]">redo</mat-icon>
+            </button>
+            
+            <button type="button" (click)="execEditorCommand('removeFormat')" title="Clear Formatting"
+                    class="p-1 px-1.5 rounded text-slate-500 hover:bg-slate-800 hover:text-white transition-all cursor-pointer flex items-center justify-center">
+              <mat-icon class="!w-4 !h-4 !text-[14px]">format_clear</mat-icon>
+            </button>
+          </div>
+
+          <!-- Mode Selector Tabs -->
+          <div class="flex items-center bg-slate-950/80 p-0.5 rounded-lg border border-white/10">
+            <button type="button" (click)="setEditorMode('wysiwyg')" 
+                    [ngClass]="{
+                      'bg-indigo-600 text-white shadow-md': editorMode() === 'wysiwyg',
+                      'text-slate-500 hover:text-slate-200': editorMode() !== 'wysiwyg'
+                    }"
+                    class="px-2 py-0.5 text-[10px] font-bold rounded transition-all cursor-pointer">
+              Visual Editor
+            </button>
+            <button type="button" (click)="setEditorMode('markdown')"
+                    [ngClass]="{
+                      'bg-indigo-600 text-white shadow-md': editorMode() === 'markdown',
+                      'text-slate-500 hover:text-slate-200': editorMode() !== 'markdown'
+                    }"
+                    class="px-2 py-0.5 text-[10px] font-bold rounded transition-all cursor-pointer">
+              Markdown Editor
+            </button>
+          </div>
+        </div>
+
+        <!-- Editor Working Panel -->
+        <div class="relative bg-slate-900/20 min-h-[280px] max-h-[450px] overflow-y-auto">
+          <!-- Visual contenteditable -->
+          @if (editorMode() === 'wysiwyg') {
+            <div contenteditable="true"
+                 #wysiwygPanel
+                 (input)="onWysiwygInput(wysiwygPanel.innerHTML)"
+                 [innerHTML]="wysiwygHtml()"
+                 class="wysiwyg-content p-4 min-h-[280px] focus:outline-none text-[13px] font-sans text-slate-250 leading-relaxed max-w-none"
+                 placeholder="Compose full biography details, benefits bullet lines, eligibility requirements and how to apply instructions here...">
+            </div>
+          } @else {
+            <!-- Raw markdown source textarea -->
+            <textarea id="cms-f-desc" rows="12" #fDesc [value]="formDescription()" (input)="onMarkdownInput(fDesc.value)"
+                      placeholder="Use markdown headers (## Overview), bullet points (- Criterion), bold formatting (**important**), etc."
+                      class="w-full p-4 text-xs rounded-none border-0 bg-transparent text-slate-300 font-mono focus:outline-none min-h-[280px] leading-relaxed resize-y"></textarea>
+          }
+        </div>
+        
+        <!-- Status footer bar -->
+        <div class="flex items-center justify-between px-3 py-1.5 bg-slate-950/80 border-t border-white/5 text-[9px] text-slate-500 font-mono select-none">
+          <div>Words: {{ getWordCount() }} | Characters: {{ formDescription().length }}</div>
+          @if (formDescription().length > 0) {
+            <div class="flex items-center gap-1 text-emerald-400 font-semibold">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Workspace Synced</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Dedicated Error Presentation Panel -->
+  @if (getParsedFormError(); as errDetails) {
+    <div class="mt-5 p-4 rounded-xl border transition-all"
+         [ngClass]="{
+           'bg-rose-950/30 border-rose-500/20 text-rose-350': !errDetails.isFirebase,
+           'bg-slate-950 border-white/10 text-slate-300': errDetails.isFirebase
+         }">
+      
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 mt-0.5">
+          @if (errDetails.isFirebase) {
+            <div class="w-6 h-6 rounded-full bg-red-950 flex items-center justify-center text-red-400">
+              <mat-icon class="!w-4 !h-4 !text-[15px]">security</mat-icon>
+            </div>
+          } @else {
+            <mat-icon class="!w-5 !h-5 text-rose-500">error_outline</mat-icon>
+          }
+        </div>
+
+        <div class="flex-1 min-w-0">
+          <h4 class="text-xs font-mono font-bold uppercase tracking-wider"
+              [class.text-rose-400]="!errDetails.isFirebase"
+              [class.text-red-400]="errDetails.isFirebase">
+            {{ errDetails.title }}
+          </h4>
+          <p class="text-[11px] mt-1.5 font-sans leading-relaxed"
+             [class.text-rose-300]="!errDetails.isFirebase"
+             [class.text-slate-400]="errDetails.isFirebase">
+            {{ errDetails.message }}
+          </p>
+
+          @if (errDetails.isFirebase) {
+            <div class="mt-3.5 pt-3 border-t border-slate-800 grid grid-cols-2 gap-3 text-[10px] font-mono select-none">
+              <div>
+                <span class="text-slate-500 block uppercase text-[8px]">Document Path</span>
+                <span class="text-slate-350 break-all">{{ errDetails.path || 'N/A' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-500 block uppercase text-[8px]">Operator Action</span>
+                <span class="text-slate-350 capitalize">{{ errDetails.operation || 'N/A' }}</span>
+              </div>
+              <div class="col-span-2">
+                <span class="text-slate-500 block uppercase text-[8px]">Auth Identity Status</span>
+                <span class="text-slate-350">{{ errDetails.authStatus || 'N/A' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Footer Actions -->
+  <div class="flex justify-end gap-3 mt-6 border-t border-white/10 pt-4">
+    <button (click)="closeForm()"
+            class="px-4 py-2 text-xs font-medium border border-white/10 rounded-xl bg-slate-900/40 hover:bg-slate-800 text-slate-300 cursor-pointer transition-colors">
+      Cancel
+    </button>
+    <button (click)="onSaveScholarship()"
+            class="px-5 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer flex items-center gap-1.5 border border-white/10 transition-colors">
+      <mat-icon class="!w-4 !h-4 !text-[14px]">save</mat-icon>
+      <span>{{ isEditing() ? 'Update Opportunity' : 'Save Publication' }}</span>
+    </button>
+  </div>
+
+</section>

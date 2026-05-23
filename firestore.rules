@@ -1,0 +1,145 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Global Safety Net catch-all: deny all reads and writes unless explicitly authorized
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Primitive Definitions for Zero-Trust Firestore Security
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Dynamic Admin checks fetching whitelist from config/users
+    function getWhitelist() {
+      return get(/databases/$(database)/documents/config/users).data;
+    }
+
+    function isWhitelisted(email) {
+      let whitelist = getWhitelist();
+      return whitelist.keys().hasAll(['userEmails', 'superAdminEmails', 'blockedEmails']) &&
+             email.lower().trim() in whitelist.userEmails;
+    }
+
+    function isSuperAdmin(email) {
+      let whitelist = getWhitelist();
+      return whitelist.keys().hasAll(['userEmails', 'superAdminEmails', 'blockedEmails']) &&
+             email.lower().trim() in whitelist.superAdminEmails;
+    }
+
+    function isBlocked(email) {
+      let whitelist = getWhitelist();
+      return whitelist.keys().hasAll(['userEmails', 'superAdminEmails', 'blockedEmails']) &&
+             email.lower().trim() in whitelist.blockedEmails;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && isWhitelisted(request.auth.token.email) && !isBlocked(request.auth.token.email);
+    }
+
+    // Rigid pattern matching for primary IDs preventing injection
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation Blueprint for Scholarship Entity shapes
+    function isValidScholarship(data) {
+      return data.keys().hasAll(['id', 'title', 'excerpt', 'description', 'category', 'amount', 'amountDisplay', 'deadline', 'applyUrl', 'eligibility', 'status', 'imageUrl', 'tags', 'views'])
+        && (data.keys().size() == 14 || (data.keys().size() == 15 && data.lastViewedAt is string))
+        && data.id is string && data.id.size() <= 128
+        && data.title is string && data.title.size() <= 200
+        && data.excerpt is string && data.excerpt.size() <= 600
+        && data.description is string && data.description.size() <= 60000
+        && data.category is string && (data.category == 'Fully-Funded' || data.category == 'Undergrad' || data.category == 'Postgrad' || data.category == 'PhD')
+        && data.amount is number
+        && data.amountDisplay is string && data.amountDisplay.size() <= 100
+        && data.deadline is string && data.deadline.size() == 10
+        && data.applyUrl is string && data.applyUrl.size() <= 1000
+        && data.eligibility is string && data.eligibility.size() <= 1000
+        && data.status is string && (data.status == 'published' || data.status == 'draft')
+        && data.imageUrl is string && data.imageUrl.size() <= 1000
+        && data.tags is list && data.tags.size() <= 10
+        && data.views is number;
+    }
+
+    // Validation Blueprint for Subscriber shapes
+    function isValidSubscriber(data) {
+      return data.keys().hasAll(['email', 'subscribedAt'])
+        && data.keys().size() == 2
+        && data.email is string && data.email.size() <= 256
+        && data.subscribedAt is string;
+    }
+
+    // 2. Collection Pattern Rules matches
+    match /scholarships/{scholarshipId} {
+      allow get: if isValidId(scholarshipId) && (existing().status == 'published' || isAdmin());
+      
+      // Query Enforcer - protect from query scraping
+      allow list: if existing().status == 'published' || isAdmin();
+
+      allow create: if isValidId(scholarshipId) && isAdmin() && isValidScholarship(incoming());
+
+      // Tiered update permissions: only admins can update, and views can be incremented via public readers
+      allow update: if isValidId(scholarshipId) && (
+        (isAdmin() && isValidScholarship(incoming())) ||
+        // Action: public reader views counter bump
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly(['views', 'lastViewedAt']) 
+          && incoming().views == existing().views + 1
+          && incoming().id == existing().id
+          && incoming().title == existing().title
+          && incoming().status == existing().status
+        )
+      );
+
+      allow delete: if isValidId(scholarshipId) && isAdmin();
+    }
+
+    match /newsletter_subscriptions/{subscriptionId} {
+      // Protect email subscribers list (PII) from public leaks
+      allow get, list: if isAdmin();
+      
+      // Guest users can subscribe their email address
+      allow create, update: if isValidId(subscriptionId) && isValidSubscriber(incoming());
+      
+      allow delete: if isAdmin();
+    }
+
+    match /config/{configId} {
+      allow read: if configId != 'users' || isAdmin();
+      allow write: if isSignedIn() && (
+        (configId != 'users' && isAdmin()) ||
+        (configId == 'users' && isSuperAdmin(request.auth.token.email) && !isBlocked(request.auth.token.email))
+      );
+    }
+
+    match /resources/{resourceId} {
+      allow read, list: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        incoming().diff(existing()).affectedKeys().hasOnly(['views']) 
+        && incoming().views == existing().views + 1
+      );
+    }
+
+    match /analytics/{docId} {
+      allow read: if true;
+      allow create, update: if true;
+    }
+
+  }
+}

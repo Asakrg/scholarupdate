@@ -1,0 +1,40 @@
+installation:
+  version: 6.6.0
+  installDate: 2026-05-17T06:32:11.551Z
+  lastUpdated: 2026-05-17T06:32:11.551Z
+modules:
+  - name: core
+    version: 6.6.0
+    installDate: 2026-05-17T06:32:09.521Z
+    lastUpdated: 2026-05-17T06:32:11.030Z
+    source: built-in
+    npmPackage: null
+    repoUrl: null
+  - name: bmm
+    version: 6.6.0
+    installDate: 2026-05-17T06:32:09.176Z
+    lastUpdated: 2026-05-17T06:32:11.032Z
+    source: built-in
+    npmPackage: null
+    repoUrl: null
+  - name: cis
+    version: v0.2.0
+    installDate: 2026-05-17T06:32:10.343Z
+    lastUpdated: 2026-05-17T06:32:11.291Z
+    source: external
+    npmPackage: bmad-creative-intelligence-suite
+    repoUrl: https://github.com/bmad-code-org/bmad-module-creative-intelligence-suite
+    channel: stable
+    sha: 14a63b893c07173b7a6cfe0fb6a9a72ba51d3cf1
+  - name: baut
+    version: main
+    installDate: 2026-05-17T06:32:10.770Z
+    lastUpdated: 2026-05-17T06:32:11.551Z
+    source: external
+    npmPackage: bmad-story-automator
+    repoUrl: https://github.com/bmad-code-org/bmad-automator
+    channel: next
+    sha: 956198ca52bb3342b73567f76f5981950286f8d8
+ides:
+  - gemini
+  - opencode

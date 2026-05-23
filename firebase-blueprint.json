@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "Scholarship": {
+      "title": "Scholarship",
+      "description": "An academic funding program opportunity published by an administrator.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique URL slug pattern matching standard IDs" },
+        "title": { "type": "string", "description": "Display heading of the academic program" },
+        "excerpt": { "type": "string", "description": "Short synopsis excerpt card summary text" },
+        "description": { "type": "string", "description": "Full Markdown Editorial body guidelines" },
+        "category": { "type": "string", "enum": ["Fully-Funded", "Undergrad", "Postgrad", "PhD"] },
+        "amount": { "type": "number", "description": "Numerical budget valuation" },
+        "amountDisplay": { "type": "string", "description": "User readable description of the funding amount" },
+        "deadline": { "type": "string", "format": "date", "description": "Expiry calendar date" },
+        "applyUrl": { "type": "string", "format": "uri", "description": "Link to the official partner application desk" },
+        "eligibility": { "type": "string", "description": "Short description of academic prerequisites" },
+        "status": { "type": "string", "enum": ["published", "draft"] },
+        "imageUrl": { "type": "string", "description": "Remote cover image header illustration" },
+        "tags": { "type": "array", "description": "List of search categories" },
+        "views": { "type": "number", "description": "Incremental page view reader counters" }
+      },
+      "required": ["id", "title", "excerpt", "description", "category", "amount", "amountDisplay", "deadline", "applyUrl", "eligibility", "status", "imageUrl", "tags", "views"]
+    },
+    "Subscriber": {
+      "title": "Subscriber",
+      "description": "A student user registered to pick up priority email scholarship alerts.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email", "description": "Verified recipient electronic mail address" },
+        "subscribedAt": { "type": "string", "format": "date-time", "description": "Subscription ISO timestamp log" }
+      },
+      "required": ["email", "subscribedAt"]
+    }
+  },
+  "firestore": {
+    "scholarships/{scholarshipId}": {
+      "schema": "Scholarship",
+      "description": "The master indices collection of scholarship database definitions."
+    },
+    "newsletter_subscriptions/{subscriptionId}": {
+      "schema": "Subscriber",
+      "description": "Email newsletter subscribers collection targeting alert events."
+    }
+  }
+}

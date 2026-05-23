@@ -1,0 +1,305 @@
+<!-- Details Canvas Container -->
+<div id="details-view-canvas" class="min-h-screen text-slate-100 flex flex-col justify-between relative overflow-hidden z-10">
+  
+  <!-- Glow background glass blobs (Solid color circular layers with extreme blur, no gradients allowed) -->
+  <div class="absolute top-[-10%] left-[-10%] w-[45rem] h-[45rem] rounded-full bg-indigo-500/15 blur-[150px] pointer-events-none -z-10"></div>
+  <div class="absolute top-[30%] right-[-10%] w-[40rem] h-[40rem] rounded-full bg-emerald-500/10 blur-[150px] pointer-events-none -z-10"></div>
+  <div class="absolute bottom-[-10%] left-[5%] w-[35rem] h-[35rem] rounded-full bg-indigo-500/10 blur-[140px] pointer-events-none -z-10"></div>
+
+  <!-- Sticky Navigation Header -->
+  <app-header />
+
+  <!-- Main container panel -->
+  <main class="flex-grow mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 relative">
+    
+    <!-- Leaderboard Ad Placement -->
+    <app-ad-banner placement="leaderboard" />
+    
+    <!-- Breadcrumb navigators (Glass styled) -->
+    <nav class="flex items-center gap-1.5 text-xs font-mono mb-8 text-slate-400 bg-slate-950/70 backdrop-blur-xl border border-white/10 px-3 py-1.5 rounded-lg inline-flex max-w-max shadow-lg">
+      <a routerLink="/" class="text-slate-300 hover:text-white transition-colors">hub</a>
+      <span>/</span>
+      <span class="text-slate-500 capitalize">{{ scholarship()?.category }}</span>
+      <span>/</span>
+      <span class="text-slate-200 truncate font-semibold">{{ scholarship()?.id }}</span>
+    </nav>
+
+    @if (!scholarship()) {
+      <!-- Empty error stage (Glass styled) -->
+      <div class="text-center py-20 bg-slate-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-8 max-w-md mx-auto shadow-2xl shadow-black/50">
+        <mat-icon class="!w-10 !h-10 !text-[44px] text-rose-500 mb-3">error_outline</mat-icon>
+        <h3 class="font-display font-bold text-sm text-white mb-1">Opportunity Wiped or Unresolved</h3>
+        <p class="text-xs text-slate-400 font-sans mb-6">We could not resolve this scholarship ID in our registers. It might have been saved as a hidden draft.</p>
+        <a routerLink="/" class="inline-flex items-center gap-1.5 px-4 py-2 font-semibold text-xs border border-indigo-500/30 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl backdrop-blur-xl transition-all shadow-[0_0_12px_rgba(99,102,241,0.2)] cursor-pointer">
+          <mat-icon class="!w-3.5 !h-3.5 !text-[12px]">arrow_back</mat-icon>
+          <span>Back to Directory</span>
+        </a>
+      </div>
+    } @else {
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        
+        <!-- Left Grid: Large Content Column (2x span) -->
+        <section class="lg:col-span-2 border border-white/10 bg-slate-950/70 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl">
+          
+          <!-- Banner cover image -->
+          <div class="relative h-64 sm:h-80 bg-slate-950 overflow-hidden">
+            <img [src]="scholarship()?.imageUrl || 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80'" 
+                 alt="" class="h-full w-full object-cover select-none"
+                 referrerpolicy="no-referrer" />
+            <div class="absolute top-4 left-4">
+              <span class="px-3 py-1 text-[10px] font-sans font-bold text-indigo-200 bg-indigo-950/60 backdrop-blur-md rounded-lg shadow-sm border border-indigo-500/20 uppercase tracking-wide">
+                {{ scholarship()?.category }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Main text core -->
+          <div class="p-6 sm:p-8">
+            
+            <h1 class="text-2xl sm:text-3xl font-display font-black text-white tracking-tight leading-tight mb-4">
+              {{ scholarship()?.title }}
+            </h1>
+
+            <!-- Horizontal fast-read parameters board (Glass styled) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 border border-white/10 bg-slate-900/60 backdrop-blur-xl rounded-xl p-4 mb-6 text-xs font-sans">
+              
+              <div>
+                <span class="block text-[9.5px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-0.5">Allocation Award</span>
+                <strong class="text-white font-bold font-display text-sm">{{ scholarship()?.amountDisplay }}</strong>
+              </div>
+
+              <div>
+                <span class="block text-[9.5px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-0.5">Application Deadline</span>
+                <strong class="text-rose-400 font-bold font-mono">{{ scholarship()?.deadline | date:'longDate' }}</strong>
+              </div>
+
+              <div class="col-span-2 sm:col-span-1 border-t sm:border-t-0 sm:border-l border-white/10 pt-3 sm:pt-0 sm:pl-4">
+                <span class="block text-[9.5px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-0.5">Status Verification</span>
+                <span class="inline-flex items-center gap-1 font-bold text-xs text-emerald-400 font-sans">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Verified Active</span>
+                </span>
+              </div>
+
+            </div>
+
+            <!-- High-Impact Direct Apply Row (Glass styled) -->
+            <div class="mb-8 flex flex-col sm:flex-row items-center gap-4 justify-between bg-emerald-950/50 border border-emerald-500/20 rounded-2xl p-5 backdrop-blur-xl">
+              <div class="text-left space-y-1">
+                <h3 class="text-xs font-extrabold text-emerald-400 font-sans">Ready to submit your application?</h3>
+                <p class="text-[11px] text-slate-400 font-sans">Secure your position by applying directly to the partner institution gateway portal.</p>
+              </div>
+              <a [href]="scholarship()?.applyUrl" target="_blank" rel="noopener noreferrer" id="apply-now-btn-main"
+                 (click)="onApplyClick($event, scholarship()?.applyUrl)"
+                 class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-bold text-sm tracking-wide text-center transition-all cursor-pointer border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.2)] hover:shadow-[0_0_18px_rgba(16,185,129,0.5)] rounded-xl focus:outline-none select-none backdrop-blur-xl">
+                @if (showConfirmationModal() && activeRedirectUrl() === scholarship()?.applyUrl) {
+                  <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span class="animate-pulse">Redirect Dialogue...</span>
+                } @else {
+                  <span>Quick Apply Link</span>
+                  <mat-icon class="!w-4 !h-4 !text-[16px]">open_in_new</mat-icon>
+                }
+              </a>
+            </div>
+
+            <!-- Share Opportunity Station -->
+            <div class="flex flex-wrap items-center gap-3 border-b border-white/10 pb-6 mb-8 mt-4">
+              <span class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest mr-1">SHARE:</span>
+              
+              <!-- Twitter/X Share -->
+              <a [href]="getTwitterShareUrl()" target="_blank" rel="noopener noreferrer"
+                 class="group inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/10 text-slate-300 hover:text-white font-semibold text-xs font-sans transition-all cursor-pointer focus:outline-none select-none shadow-md backdrop-blur-xl">
+                 <svg class="w-3.5 h-3.5 fill-current text-slate-400 group-hover:text-white transition-colors" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                 <span>Twitter / X</span>
+              </a>
+
+              <!-- LinkedIn Share -->
+              <a [href]="getLinkedInShareUrl()" target="_blank" rel="noopener noreferrer"
+                 class="group inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/10 text-slate-300 hover:text-white font-semibold text-xs font-sans transition-all cursor-pointer focus:outline-none select-none shadow-md backdrop-blur-xl">
+                 <svg class="w-3.5 h-3.5 fill-current text-slate-400 group-hover:text-white transition-colors" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                 <span>LinkedIn</span>
+              </a>
+
+              <!-- Email Share -->
+              <a [href]="getEmailShareUrl()"
+                 class="group inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/10 text-slate-300 hover:text-white font-semibold text-xs font-sans transition-all cursor-pointer focus:outline-none select-none shadow-md backdrop-blur-xl">
+                 <mat-icon class="!w-4 !h-4 !text-[15px] text-slate-400 group-hover:text-white transition-colors">mail</mat-icon>
+                 <span>Email</span>
+              </a>
+
+              <!-- Copy Link Button -->
+              <button (click)="copyLink()"
+                      class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/10 text-slate-300 hover:text-white font-semibold text-xs font-sans transition-all cursor-pointer focus:outline-none select-none shadow-md backdrop-blur-xl">
+                 <mat-icon class="!w-4 !h-4 !text-[15px] text-slate-400">
+                   {{ linkCopied() ? 'check_circle' : 'content_copy' }}
+                 </mat-icon>
+                 <span [class.text-emerald-400]="linkCopied()">
+                   {{ linkCopied() ? 'Copied' : 'Copy Link' }}
+                 </span>
+              </button>
+            </div>
+
+            <!-- Parsed Editorial Description Content -->
+            <div id="details-editorial-wrapper" class="prose prose-invert prose-sm max-w-none text-slate-300 font-sans leading-relaxed text-xs sm:text-sm">
+              <!-- Custom Markdown HTML output -->
+              <div [innerHTML]="htmlDescription()"></div>
+            </div>
+
+            <!-- How to Apply / Application Instructions Section -->
+            <div id="application-instructions-section" class="mt-10 pt-8 border-t border-white/10">
+              <div class="flex items-center gap-2 mb-5 select-none">
+                <mat-icon class="!w-5 !h-5 !text-[20px] text-indigo-400">assignment_turned_in</mat-icon>
+                <h3 class="text-xs font-mono font-bold text-white uppercase tracking-widest">
+                  How To Apply & Submission Roadmap
+                </h3>
+              </div>
+              
+              <p class="text-[11.5px] font-sans text-slate-400 mb-6 leading-relaxed">
+                Follow the authoritative protocol verified for the <strong>{{ scholarship()?.title }}</strong>. Ensure all required document packages are uploaded and finalized before the official cutoff date.
+              </p>
+
+              <div class="space-y-4 font-sans">
+                <!-- Step 1 (Frosted) -->
+                <div class="flex gap-3 p-4 rounded-xl border border-white/10 bg-slate-900/50 backdrop-blur-xl hover:bg-slate-900/70 transition-colors animate-fade-in">
+                  <span class="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-500/30 text-[10.5px] font-mono font-bold flex items-center justify-center shadow-md">1</span>
+                  <div class="space-y-1">
+                    <h4 class="text-xs font-bold text-white">Compile Crucial Supporting Documentation</h4>
+                    <p class="text-[11px] text-slate-400 leading-normal">
+                      Collect the mandatory records matching the <span class="font-semibold text-slate-300">{{ scholarship()?.category }}</span> academic tier:
+                    </p>
+                    <ul class="list-disc pl-4 text-[10.5px] text-slate-300 space-y-1.5 font-sans mt-2.5">
+                      <li>Official academic transcripts from your previously graduated institution</li>
+                      @if (scholarship()?.category === 'PhD' || scholarship()?.category === 'Postgrad') {
+                        <li>Comprehensive Academic CV and 2-3 formal recommendation letters</li>
+                        <li>A robust Statement of Purpose (SOP) or detailed research proposal mapping your thesis goals</li>
+                      } @else if (scholarship()?.category === 'Fully-Funded') {
+                        <li>Proof of financial hardship, tax statements, or income declarations (if applicable)</li>
+                        <li>Statement of Purpose emphasizing financial or direct academic impact needs</li>
+                      } @else {
+                        <li>Certified high school or college graduation records/diplomas</li>
+                        <li>Personal statement detailing community volunteer history or leadership credentials</li>
+                      }
+                      <li>Proof of English Language proficiency (e.g. IELTS / TOEFL scores)</li>
+                      <li>Government-issued identification card or passport bio-page copy</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Step 2 (Frosted) -->
+                <div class="flex gap-3 p-4 rounded-xl border border-white/10 bg-slate-900/50 backdrop-blur-xl hover:bg-slate-900/70 transition-colors animate-fade-in">
+                  <span class="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-500/30 text-[10.5px] font-mono font-bold flex items-center justify-center shadow-md">2</span>
+                  <div class="space-y-1">
+                    <h4 class="text-xs font-bold text-white">Access the Verified Host Portal</h4>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">
+                      Do not submit credentials to unverified third-party addresses. Navigate to the official university portal via the certified link below:
+                    </p>
+                    <div class="mt-2.5">
+                      <a [href]="scholarship()?.applyUrl" target="_blank" rel="noopener noreferrer"
+                         (click)="onApplyClick($event, scholarship()?.applyUrl)"
+                         class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10.5px] font-mono font-bold border border-indigo-500/30 transition-transform active:scale-95 cursor-pointer backdrop-blur-xl shadow-[0_0_12px_rgba(99,102,241,0.2)]">
+                        <span>Register Candidate Profile</span>
+                        <mat-icon class="!w-3 !h-3 !text-[12px]">open_in_new</mat-icon>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 3 (Frosted) -->
+                <div class="flex gap-3 p-4 rounded-xl border border-white/10 bg-slate-900/50 backdrop-blur-xl hover:bg-slate-900/70 transition-colors animate-fade-in">
+                  <span class="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-500/30 text-[10.5px] font-mono font-bold flex items-center justify-center shadow-md">3</span>
+                  <div class="space-y-1">
+                    <h4 class="text-xs font-bold text-white">Final Verification & Submission Cutoff</h4>
+                    <p class="text-[11px] text-slate-400 leading-relaxed font-sans">
+                      Upload all PDF attachments and submit. The application window strictly closes on 
+                      <strong class="text-rose-400 font-mono text-[11px] font-bold">{{ scholarship()?.deadline | date:'longDate' }}</strong>. 
+                      We recommend submitting at least 48 hours early to prevent system server overloaded delays.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Social and action footbar -->
+            <div class="mt-12 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 font-mono text-[10px] text-slate-500">
+              <span>Authoritative Post Slug: <span class="text-slate-400">{{ scholarship()?.id }}</span></span>
+              <div class="flex items-center gap-1.5">
+                <mat-icon class="!w-4 !h-4 !text-[14px]">visibility</mat-icon>
+                <span>{{ scholarship()?.views }} distinct index retrievals</span>
+              </div>
+            </div>
+
+            <!-- Related Academic Discoveries (Standalone Glass Component) -->
+            <app-related-discoveries [items]="relatedScholarships()" />
+
+          </div>
+
+        </section>
+
+        <!-- Right Grid: Action Gateway and AdSense Block column (1x span) -->
+        <aside class="space-y-6">
+          
+          <!-- Direct action gateway card (Glassmorphic) -->
+          <div class="border border-white/10 bg-slate-950/70 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
+            <h3 class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest mb-4">Official Application</h3>
+            
+            <div class="space-y-4">
+              <div class="p-4 rounded-xl bg-slate-900/55 border border-white/10 backdrop-blur-xl font-sans">
+                <p class="text-[11px] text-slate-400 mb-1">Eligibility Core Summary</p>
+                <p class="text-xs text-white font-semibold leading-relaxed">
+                  {{ scholarship()?.eligibility }}
+                </p>
+              </div>
+
+              <!-- Direct redirection CTA -->
+              <a [href]="scholarship()?.applyUrl" target="_blank" rel="noopener noreferrer"
+                 (click)="onApplyClick($event, scholarship()?.applyUrl)"
+                 class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-indigo-600 text-white font-bold text-xs text-center hover:bg-indigo-500 cursor-pointer border border-indigo-500/30 transition-colors shadow-[0_0_12px_rgba(99,102,241,0.2)] hover:shadow-[0_0_18px_rgba(99,102,241,0.5)] focus:outline-none backdrop-blur-xl">
+                <span>Apply via Partner Gateway</span>
+                <mat-icon class="!w-4 !h-4">launch</mat-icon>
+              </a>
+              
+              <p class="text-[9.5px] text-center text-slate-500 font-sans leading-relaxed">
+                By clicking apply, you will be redirected to the official college composition page. Do not pay any processing fees to unofficial agents.
+              </p>
+            </div>
+          </div>
+
+
+          <!-- Quick safety alert informational panel (Frosted border dashed) -->
+          <div class="border border-dashed border-white/20 bg-slate-950/60 backdrop-blur-xl rounded-2xl p-5 text-slate-400 font-sans space-y-3">
+            <h4 class="text-[11px] font-mono font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <mat-icon class="!w-4 !h-4 text-indigo-400">security</mat-icon>
+              <span>Student Safety Protocol</span>
+            </h4>
+            <p class="text-[11px] leading-relaxed">
+              ScholarshipHub operates as an autonomous indexing network. We gather institutional announcements directly from University directories. Always crosscheck documentation requirements.
+            </p>
+          </div>
+
+          <!-- Sidebar Ad Banner -->
+          <app-ad-banner placement="sidebar" />
+
+        </aside>
+
+      </div>
+
+    }
+
+  </main>
+
+  <!-- Bottom page footer -->
+  <app-footer />
+
+  <!-- Safety Confirmation modal dialog (Standalone Glass Component) -->
+  <app-redirection-modal 
+    [showModal]="showConfirmationModal()" 
+    [redirectUrl]="activeRedirectUrl()" 
+    [deadline]="scholarship()?.deadline"
+    (cancel)="showConfirmationModal.set(false)"
+    (proceed)="showConfirmationModal.set(false)" />
+
+</div>

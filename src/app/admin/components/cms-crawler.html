@@ -1,0 +1,358 @@
+<!-- Firecrawl & Computer Use automated research block (Glassmorphic Dark Theme) -->
+<section id="gemini-ai-finder-canvas" class="border border-white/10 bg-slate-950/40 backdrop-blur-xl rounded-2xl p-6 shadow-2xl mb-8 text-slate-200">
+  <div class="flex items-center gap-2 border-b border-white/10 pb-3 mb-5">
+    <mat-icon class="!w-5 !h-5 !text-[20px] text-indigo-400">smart_toy</mat-icon>
+    <h2 class="text-base font-display font-bold text-slate-100">Deep Crawler Search & Computer Use Agent</h2>
+    <span class="ml-1.5 px-2 py-0.5 text-[8.5px] font-mono rounded bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 font-bold uppercase tracking-wider">AI AGENT ENGINE</span>
+  </div>
+
+  <div class="space-y-4">
+    <p class="text-xs text-slate-400 font-sans leading-relaxed">
+      Configure your target search parameters below. The agent automatically triggers Firecrawl's deep search API (v1 search and structured JSON format scrape) to crawl the web, parse academic listings, and structure real opportunities as <strong>Drafts</strong> directly in your system.
+    </p>
+
+    <!-- Search Console Inputs row -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <!-- Continent Selection -->
+      <div class="relative flex flex-col gap-1">
+        <label class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Target Continent</label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <mat-icon class="!w-4 !h-4 !text-[16px]">public</mat-icon>
+          </span>
+          <select #contSelect [value]="selectedContinent()" (change)="selectedContinent.set(contSelect.value)"
+                  class="w-full pl-9 pr-8 py-2.5 text-xs rounded-lg border border-white/10 bg-slate-900/60 backdrop-blur-sm text-slate-200 font-sans appearance-none focus:outline-none focus:ring-1 focus:ring-indigo-500/50 cursor-pointer">
+            <option value="Global">Global (All Regions)</option>
+            <option value="Europe">Europe</option>
+            <option value="Asia">Asia</option>
+            <option value="Africa">Africa</option>
+            <option value="North America">North America</option>
+            <option value="South America">South America</option>
+            <option value="Australia">Australia & Oceania</option>
+          </select>
+          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <mat-icon class="!w-4 !h-4 !text-[16px]">expand_more</mat-icon>
+          </span>
+        </div>
+      </div>
+
+      <!-- Opportunity Type Selection -->
+      <div class="relative flex flex-col gap-1">
+        <label class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Opportunity Type</label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <mat-icon class="!w-4 !h-4 !text-[16px]">school</mat-icon>
+          </span>
+          <select #typeSelect [value]="selectedType()" (change)="selectedType.set(typeSelect.value)"
+                  class="w-full pl-9 pr-8 py-2.5 text-xs rounded-lg border border-white/10 bg-slate-900/60 backdrop-blur-sm text-slate-200 font-sans appearance-none focus:outline-none focus:ring-1 focus:ring-indigo-500/50 cursor-pointer">
+            <option value="Fully-Funded">Fully-Funded Scholarships</option>
+            <option value="Undergraduate">Undergraduate Scholarships</option>
+            <option value="Postgraduate">Postgraduate Scholarships</option>
+            <option value="PhD">PhD & Doctoral Fellowships</option>
+            <option value="Postdoc">Postdoc Research Grants</option>
+          </select>
+          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <mat-icon class="!w-4 !h-4 !text-[16px]">expand_more</mat-icon>
+          </span>
+        </div>
+      </div>
+
+      <!-- Execute Button -->
+      <div class="flex flex-col justify-end">
+        <button (click)="onAiSearch()" [disabled]="aiLoading()"
+                class="inline-flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs font-sans shadow-lg shadow-indigo-500/10 cursor-pointer disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed transition-all select-none border border-white/10">
+          <mat-icon class="!w-4 !h-4 !text-[15px] animate-spin" *ngIf="aiLoading()">sync</mat-icon>
+          <mat-icon class="!w-4 !h-4 !text-[15px]" *ngIf="!aiLoading()">bolt</mat-icon>
+          <span>{{ aiLoading() ? 'Agent Crawling...' : 'Trigger Crawler Search' }}</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Quick Chip Prompts -->
+    <div class="flex flex-wrap items-center gap-2 pt-1">
+      <span class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest mr-1">PRESETS:</span>
+      <button (click)="setParamsAndSearch('Europe', 'PhD')"
+              class="px-2.5 py-1 text-[10px] font-sans font-medium rounded-lg border border-white/5 bg-slate-900/40 hover:bg-slate-800/80 cursor-pointer text-slate-300 transition-all select-none">
+        PhD in Europe
+      </button>
+      <button (click)="setParamsAndSearch('Asia', 'Fully-Funded')"
+              class="px-2.5 py-1 text-[10px] font-sans font-medium rounded-lg border border-white/5 bg-slate-900/40 hover:bg-slate-800/80 cursor-pointer text-slate-300 transition-all select-none">
+        Fully-Funded Asia
+      </button>
+      <button (click)="setParamsAndSearch('Africa', 'Undergraduate')"
+              class="px-2.5 py-1 text-[10px] font-sans font-medium rounded-lg border border-white/5 bg-slate-900/40 hover:bg-slate-800/80 cursor-pointer text-slate-300 transition-all select-none">
+        Undergrad Africa
+      </button>
+      <button (click)="setParamsAndSearch('Global', 'Postdoc')"
+              class="px-2.5 py-1 text-[10px] font-sans font-medium rounded-lg border border-white/5 bg-slate-900/40 hover:bg-slate-800/80 cursor-pointer text-slate-300 transition-all select-none">
+        Global Postdoc Grants
+      </button>
+    </div>
+
+    <!-- Single Column Full Width Console Window Panel -->
+    <div class="mt-4 w-full">
+      
+      <!-- Live Logs Terminal CLI (Frosted Dark Window - Full Width) -->
+      <div class="w-full bg-slate-950/80 border border-white/10 text-slate-300 font-mono text-[11px] p-5 rounded-xl h-[340px] shadow-inner backdrop-blur-md">
+        <div class="flex flex-col h-full">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3 shrink-0 select-none">
+            <div class="flex items-center gap-2">
+              <!-- Mimic terminal window control buttons -->
+              <div class="flex items-center gap-1.5 mr-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-rose-500/80 inline-block"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-amber-500/80 inline-block"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1.5">
+                <span class="inline-block h-2 w-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                <span>Firecrawl Agent Sandbox CLI</span>
+              </span>
+            </div>
+            <span class="text-[9px] text-slate-500 font-mono font-bold">session: active</span>
+          </div>
+          
+          <div class="flex-grow space-y-2 overflow-y-auto pr-1">
+            @if (terminalLogs().length === 0) {
+              <div class="text-slate-500 text-center py-20 italic">
+                Terminal inactive. Click "Trigger Crawler Search" to spin up the web search agent.
+              </div>
+            } @else {
+              @for (log of terminalLogs(); track log.text) {
+                <div class="flex items-start gap-2 select-none leading-relaxed">
+                  <span class="text-slate-500 shrink-0 select-none">[{{ log.time }}]</span>
+                  <span class="px-1.5 py-0.5 text-[8.5px] font-mono font-bold rounded shrink-0 select-none"
+                        [ngClass]="{
+                          'bg-indigo-950/80 text-indigo-300 border border-indigo-800/60': log.type === 'firecrawl',
+                          'bg-amber-950/80 text-amber-300 border border-amber-800/60': log.type === 'computer-use',
+                          'bg-slate-900 text-slate-400 border border-slate-800': log.type === 'system'
+                        }">
+                    {{ log.type }}
+                  </span>
+                  <span class="text-slate-300">{{ log.text }}</span>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Status Alerts inside console -->
+    @if (aiSuccessMessage()) {
+      <div class="p-3 bg-emerald-950/30 text-emerald-300 text-xs rounded-xl border border-emerald-500/20 flex items-center gap-1.5 mt-2 transition-all shadow-inner">
+        <mat-icon class="!w-4 !h-4 !text-[15px] text-emerald-400">check_circle</mat-icon>
+        <span>{{ aiSuccessMessage() }}</span>
+      </div>
+    }
+
+    @if (aiErrorMessage()) {
+      <div class="p-3 bg-rose-950/30 text-rose-300 text-xs rounded-xl border border-rose-500/20 flex items-center gap-1.5 mt-2 shadow-inner">
+        <mat-icon class="!w-4 !h-4 !text-[15px] text-rose-400">error</mat-icon>
+        <span>{{ aiErrorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Background Discovered Auto-Drafts Queue -->
+    @if (svc.autoDrafts().length > 0) {
+      <div class="border border-indigo-500/20 bg-slate-900/40 backdrop-blur-xl rounded-xl p-4 sm:p-5 mt-4 shadow-xl text-slate-200">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2 mb-4">
+          <span class="text-xs font-mono font-bold text-indigo-400 tracking-wide uppercase flex items-center gap-1.5">
+            <mat-icon class="!w-4 !h-4 !text-[15px] text-indigo-400 animate-pulse">radar</mat-icon>
+            <span>Background Auto-Discovered Opportunities ({{ svc.autoDrafts().length }})</span>
+          </span>
+          <button (click)="svc.fetchAutoDrafts()" class="text-slate-400 hover:text-slate-200 cursor-pointer focus:outline-none text-[10px] font-mono flex items-center gap-1">
+            <mat-icon class="!w-3 !h-3 !text-[11px]">refresh</mat-icon>
+            <span>Refresh Queue</span>
+          </button>
+        </div>
+
+        <p class="text-[11px] text-slate-400 mb-4 font-sans leading-relaxed">
+          These opportunities were automatically discovered in the background by the Firecrawl Scraper Agent. Review and approve them to add them to the main directory, or dismiss them to discard.
+        </p>
+
+        <!-- Card Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          @for (opp of svc.autoDrafts(); track opp.id) {
+            <div class="border border-white/10 bg-slate-950/40 hover:bg-slate-900/40 rounded-xl overflow-hidden shadow-lg flex flex-col justify-between transition-all duration-300">
+              <div>
+                <div class="relative h-24 bg-slate-950">
+                  <img [src]="opp.imageUrl || 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80'" alt="" class="h-full w-full object-cover opacity-60" referrerpolicy="no-referrer" />
+                  <div class="absolute top-2 left-2">
+                    <span class="px-2 py-0.5 text-[8px] font-sans font-bold bg-slate-950/80 text-indigo-300 rounded uppercase tracking-wider border border-indigo-500/20">
+                      {{ opp.category }}
+                    </span>
+                  </div>
+                  <div class="absolute top-2 right-2">
+                    <span class="px-2 py-0.5 text-[8px] font-mono bg-indigo-950/80 text-indigo-400 rounded uppercase tracking-wider border border-indigo-500/30">
+                      Auto-Found
+                    </span>
+                  </div>
+                </div>
+
+                <div class="p-3.5 space-y-2">
+                  <h4 class="font-display font-bold text-xs text-slate-100 leading-snug line-clamp-1" [title]="opp.title">{{ opp.title }}</h4>
+                  
+                  <table class="w-full text-[10px] font-sans text-slate-400 border-collapse table-fixed">
+                    <tbody>
+                      <tr>
+                        <td class="py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-500 w-20">Value:</td>
+                        <td class="py-0.5 font-semibold text-indigo-400 truncate text-[10.5px]">{{ opp.amountDisplay }}</td>
+                      </tr>
+                      <tr>
+                        <td class="py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-500">Deadline:</td>
+                        <td class="py-0.5 font-mono text-rose-400 font-bold truncate">{{ opp.deadline }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  
+                  <p class="text-[10px] text-slate-400 line-clamp-2 leading-relaxed font-sans mt-1">
+                    {{ opp.excerpt }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="p-2.5 bg-slate-950/60 border-t border-white/5 flex items-center justify-between gap-1.5">
+                <button (click)="dismissAutoDraft(opp.id)"
+                        class="inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-rose-600/10 hover:bg-rose-600/20 text-rose-300 hover:text-rose-250 font-semibold text-[10px] transition-all border border-rose-500/20 cursor-pointer focus:outline-none select-none">
+                  <mat-icon class="!w-3 !h-3 !text-[11px]">delete</mat-icon>
+                  <span>Dismiss</span>
+                </button>
+
+                <div class="flex items-center gap-1.5">
+                  <button (click)="loadAiOpportunityIntoForm(opp)"
+                          class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg border border-white/10 bg-slate-800/40 hover:bg-slate-700/60 font-semibold text-[10px] text-slate-200 cursor-pointer select-none transition-all">
+                    <mat-icon class="!w-3 !h-3 !text-[11px] text-slate-400">edit</mat-icon>
+                    <span>Edit</span>
+                  </button>
+                  <button (click)="approveAutoDraft(opp)"
+                          class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] cursor-pointer select-none border border-white/10 transition-colors">
+                    <mat-icon class="!w-3 !h-3 !text-[11px]">check</mat-icon>
+                    <span>Approve</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Loading Skeleton placeholder -->
+    @if (aiLoading()) {
+      <div class="border border-white/5 bg-slate-900/20 rounded-xl p-5 space-y-4 animate-pulse mt-4">
+        <div class="h-4 bg-slate-800 rounded w-1/4"></div>
+        <div class="h-3 bg-slate-800 rounded w-3/4"></div>
+        <div class="h-3 bg-slate-800 rounded w-1/2"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div class="h-24 bg-slate-800 rounded-xl"></div>
+          <div class="h-24 bg-slate-800 rounded-xl"></div>
+        </div>
+      </div>
+    }
+
+    <!-- Firecrawl Crawled Opportunities Result Panel -->
+    @if (aiResults() && aiResults()!.length > 0) {
+      <div class="border border-indigo-500/20 bg-indigo-950/10 rounded-xl p-4 sm:p-5 mt-4 shadow-xl">
+        
+        <div class="flex items-center justify-between border-b border-white/10 pb-2 mb-4">
+          <span class="text-xs font-mono font-bold text-indigo-400 tracking-wide uppercase flex items-center gap-1">
+            <mat-icon class="!w-4 !h-4 !text-[14px]">checklist</mat-icon>
+            <span>Crawler Results - Saved as Drafts ({{ aiResults()!.length }})</span>
+          </span>
+          <button (click)="aiResults.set(null)" class="text-slate-400 hover:text-slate-200 cursor-pointer focus:outline-none text-[10px] font-mono">
+            Clear list
+          </button>
+        </div>
+
+        <!-- Bento-like Results Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          @for (opp of aiResults(); track opp.id) {
+            <div class="border border-white/10 bg-slate-900/40 hover:bg-slate-900/60 rounded-xl overflow-hidden shadow-lg flex flex-col justify-between transition-colors">
+              
+              <!-- Card main cover and metadata snippet -->
+              <div>
+                <div class="relative h-28 bg-slate-950">
+                  <img [src]="opp.imageUrl || 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80'" alt="" class="h-full w-full object-cover opacity-75" referrerpolicy="no-referrer" />
+                  <div class="absolute top-2 left-2">
+                    <span class="px-2 py-0.5 text-[8px] font-sans font-bold bg-slate-950/80 text-slate-200 rounded uppercase tracking-wider border border-white/10">
+                      {{ opp.category }}
+                    </span>
+                  </div>
+                  <!-- Status Indicator -->
+                  <div class="absolute top-2 right-2">
+                    <span class="px-2 py-0.5 text-[8px] font-mono bg-amber-500/20 text-amber-300 rounded uppercase tracking-wider border border-amber-500/20">
+                      Draft Saved
+                    </span>
+                  </div>
+                </div>
+
+                <div class="p-4 space-y-2">
+                  <h4 class="font-display font-bold text-xs sm:text-sm text-slate-100 leading-snug">{{ opp.title }}</h4>
+                  <table class="w-full text-[10px] font-sans text-slate-400 border-collapse table-fixed">
+                    <tbody>
+                      <tr>
+                        <td class="py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-500 w-20">Value:</td>
+                        <td class="py-0.5 font-semibold text-indigo-400 truncate text-[10.5px]">{{ opp.amountDisplay }}</td>
+                      </tr>
+                      <tr>
+                        <td class="py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-500">Deadline:</td>
+                        <td class="py-0.5 font-mono text-rose-400 font-bold truncate">{{ opp.deadline }}</td>
+                      </tr>
+                      <tr>
+                        <td class="py-0.5 font-mono text-[9px] uppercase tracking-wider text-slate-500">Eligibility:</td>
+                        <td class="py-0.5 truncate text-slate-300 font-medium" [title]="opp.eligibility">{{ opp.eligibility }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p class="text-[10px] text-slate-400 line-clamp-2 mt-2 leading-relaxed font-sans">
+                    {{ opp.excerpt }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Control Actions to Publish or Customize -->
+              <div class="p-3 bg-slate-950/40 border-t border-white/5 flex items-center justify-between gap-2">
+                <button (click)="loadAiOpportunityIntoForm(opp)"
+                        class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-white/10 bg-slate-800/40 hover:bg-slate-700/60 hover:border-white/20 font-semibold text-[10px] text-slate-200 cursor-pointer select-none transition-all">
+                  <mat-icon class="!w-3 !h-3 !text-[11px] text-slate-400">edit_note</mat-icon>
+                  <span>Review Details</span>
+                </button>
+                <button (click)="publishAiOpportunity(opp)"
+                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] cursor-pointer select-none border border-white/10 transition-colors">
+                  <mat-icon class="!w-3 !h-3 !text-[11px]">publish</mat-icon>
+                  <span>Publish to Live</span>
+                </button>
+              </div>
+
+            </div>
+          }
+        </div>
+
+        <!-- Grounding Citations citation list block (As per instructions guidelines) -->
+        @if (aiCitations() && aiCitations()!.length > 0) {
+          <div class="mt-4 pt-3 border-t border-white/10 text-left font-sans">
+            <span class="block text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+              <mat-icon class="!w-3.5 !h-3.5 !text-[12px] text-slate-500">link</mat-icon>
+              <span>Web Citations & Sources Consulted:</span>
+            </span>
+            <div class="flex flex-wrap gap-2.5">
+              @for (cit of aiCitations(); track cit.uri) {
+                <a [href]="cit.uri" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-1 text-[10px] text-indigo-400 hover:text-indigo-300 font-sans hover:underline focus:outline-none">
+                  <mat-icon class="!w-3 !h-3 !text-[11px] text-slate-500">link</mat-icon>
+                  <span class="truncate max-w-[200px]">{{ cit.title }}</span>
+                </a>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+    }
+
+  </div>
+</section>

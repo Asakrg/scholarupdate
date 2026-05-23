@@ -1,0 +1,868 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================
+   ScholarshipHub — Premium Glassmorphism Design System
+   ========================================== */
+
+:root {
+  color-scheme: dark;
+  --font-sans: 'Instrument Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+
+  /* Glassmorphism Frost Tiers */
+  --frost-light-bg: rgba(255, 255, 255, 0.03);
+  --frost-light-blur: 8px;
+  --frost-light-border: rgba(255, 255, 255, 0.06);
+
+  --frost-medium-bg: rgba(255, 255, 255, 0.05);
+  --frost-medium-blur: 16px;
+  --frost-medium-border: rgba(255, 255, 255, 0.10);
+
+  --frost-heavy-bg: rgba(255, 255, 255, 0.08);
+  --frost-heavy-blur: 24px;
+  --frost-heavy-border: rgba(255, 255, 255, 0.15);
+
+  /* Glow palette */
+  --glow-indigo: rgba(99, 102, 241, 0.15);
+  --glow-emerald: rgba(16, 185, 129, 0.12);
+  --glow-amber: rgba(245, 158, 11, 0.12);
+  --glow-rose: rgba(244, 63, 94, 0.12);
+
+  /* Luminous border shift */
+  --border-luminance: rgba(255, 255, 255, 0.08);
+  --border-luminance-hover: rgba(255, 255, 255, 0.18);
+}
+
+html, body {
+  background-color: #030712 !important;
+  color: #f1f5f9 !important;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Material Icons custom vertical centering alignment override */
+.material-icons, .mat-icon {
+  font-family: 'Material Icons' !important;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* ==========================================
+   Glassmorphism Frost Tier Classes
+   ========================================== */
+
+.frost-light {
+  background: var(--frost-light-bg);
+  backdrop-filter: blur(var(--frost-light-blur));
+  -webkit-backdrop-filter: blur(var(--frost-light-blur));
+  border: 1px solid var(--frost-light-border);
+}
+
+.frost-medium {
+  background: var(--frost-medium-bg);
+  backdrop-filter: blur(var(--frost-medium-blur));
+  -webkit-backdrop-filter: blur(var(--frost-medium-blur));
+  border: 1px solid var(--frost-medium-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+}
+
+.frost-heavy {
+  background: var(--frost-heavy-bg);
+  backdrop-filter: blur(var(--frost-heavy-blur));
+  -webkit-backdrop-filter: blur(var(--frost-heavy-blur));
+  border: 1px solid var(--frost-heavy-border);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.08);
+}
+
+/* Luminous border hover effect */
+.frost-glow {
+  border-color: var(--border-luminance);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.frost-glow:hover {
+  border-color: var(--border-luminance-hover);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.08);
+}
+
+/* ==========================================
+   Scholarship Card — Enhanced
+   ========================================== */
+
+.scholarship-card {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-color: var(--border-luminance);
+}
+.scholarship-card:hover {
+  transform: translateY(-4px) scale(1.015);
+  border-color: var(--border-luminance-hover);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(99, 102, 241, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+}
+
+/* Deadline urgency color bar */
+.urgency-bar {
+  height: 3px;
+  border-radius: 0 0 16px 16px;
+  transition: opacity 0.3s ease;
+}
+.urgency-safe { background: linear-gradient(90deg, #10b981, #34d399); }
+.urgency-warning { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.urgency-danger { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+.urgency-critical {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+  animation: urgency-pulse 2s ease-in-out infinite;
+}
+
+/* Bookmark heart micro-animation */
+.bookmark-heart {
+  transition: transform 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55), color 0.2s ease;
+}
+.bookmark-heart.active {
+  color: #f43f5e !important;
+  transform: scale(1.3);
+}
+.bookmark-heart:not(.active):hover {
+  transform: scale(1.15);
+}
+
+/* ==========================================
+   Input Resets
+   ========================================== */
+
+input, select, textarea {
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease;
+}
+
+/* ==========================================
+   Animation Keyframes
+   ========================================== */
+
+/* Toast slide-in */
+@keyframes slide-in {
+  from {
+    transform: translateY(1.25rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.animate-slide-in {
+  animation: slide-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Fade up entrance (scroll-triggered) */
+@keyframes fade-up {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.animate-fade-up {
+  opacity: 0;
+  animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.animate-fade-up.in-view {
+  animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Scale entrance */
+@keyframes scale-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-scale-in {
+  opacity: 0;
+}
+.animate-scale-in.in-view {
+  animation: scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Staggered children */
+.stagger-children.in-view > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children.in-view > *:nth-child(2) { animation-delay: 100ms; }
+.stagger-children.in-view > *:nth-child(3) { animation-delay: 200ms; }
+.stagger-children.in-view > *:nth-child(4) { animation-delay: 300ms; }
+.stagger-children.in-view > *:nth-child(5) { animation-delay: 400ms; }
+.stagger-children.in-view > *:nth-child(6) { animation-delay: 500ms; }
+.stagger-children.in-view > *:nth-child(7) { animation-delay: 600ms; }
+.stagger-children.in-view > *:nth-child(8) { animation-delay: 700ms; }
+
+/* Count-up shimmer effect */
+@keyframes count-glow {
+  0%, 100% { text-shadow: 0 0 8px rgba(99, 102, 241, 0.0); }
+  50% { text-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
+}
+.count-animated {
+  animation: count-glow 2s ease-in-out 1;
+}
+
+/* Urgency pulse */
+@keyframes urgency-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Explore icon pulse */
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Glow orb drift */
+@keyframes orb-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -20px) scale(1.05); }
+  50% { transform: translate(-10px, 25px) scale(0.98); }
+  75% { transform: translate(-25px, -15px) scale(1.03); }
+}
+@keyframes orb-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-20px, 30px) scale(1.03); }
+  50% { transform: translate(25px, -10px) scale(0.97); }
+  75% { transform: translate(15px, 20px) scale(1.05); }
+}
+@keyframes orb-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-15px, -25px) scale(1.04); }
+  66% { transform: translate(20px, 15px) scale(0.96); }
+}
+
+.orb-drift-1 { animation: orb-drift-1 20s ease-in-out infinite; will-change: transform; }
+.orb-drift-2 { animation: orb-drift-2 25s ease-in-out infinite; will-change: transform; }
+.orb-drift-3 { animation: orb-drift-3 18s ease-in-out infinite; will-change: transform; }
+
+/* Marquee auto-scroll */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  gap: 3rem;
+  animation: marquee-scroll 30s linear infinite;
+  will-change: transform;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* Shimmer skeleton loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Hero mesh gradient animation */
+@keyframes mesh-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+.mesh-gradient {
+  background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(16,185,129,0.08) 25%, rgba(139,92,246,0.10) 50%, rgba(6,182,212,0.06) 75%, rgba(99,102,241,0.12) 100%);
+  background-size: 400% 400%;
+  animation: mesh-shift 15s ease-in-out infinite;
+}
+
+/* Featured card gold glow */
+.featured-glow {
+  box-shadow: 0 12px 48px rgba(0,0,0,0.4), 0 0 30px rgba(245,158,11,0.12), inset 0 1px 2px rgba(255,255,255,0.08);
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+.featured-glow:hover {
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(245,158,11,0.2), inset 0 1px 2px rgba(255,255,255,0.12);
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+
+/* Category chip tilt effect */
+.category-chip {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.category-chip:hover {
+  transform: translateY(-2px) perspective(800px) rotateX(2deg);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 12px var(--glow-indigo);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+/* Testimonial card */
+.testimonial-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+}
+
+/* Search bar expansion */
+.search-expand {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.search-expand:focus-within {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 8px 32px rgba(0,0,0,0.3);
+  border-color: rgba(99, 102, 241, 0.3) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ==========================================
+   Prefers Reduced Motion
+   ========================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .orb-drift-1, .orb-drift-2, .orb-drift-3 { animation: none !important; }
+  .marquee-track { animation: none !important; }
+  .mesh-gradient { animation: none !important; }
+  .scholarship-card:hover { transform: none !important; }
+}
+
+/* ==========================================
+   Light Mode CSS Overrides
+   ========================================== */
+html.light-mode {
+  color-scheme: light;
+
+  --frost-light-bg: rgba(255, 255, 255, 0.5);
+  --frost-light-border: rgba(15, 23, 42, 0.06);
+
+  --frost-medium-bg: rgba(255, 255, 255, 0.65);
+  --frost-medium-border: rgba(15, 23, 42, 0.08);
+
+  --frost-heavy-bg: rgba(255, 255, 255, 0.8);
+  --frost-heavy-border: rgba(15, 23, 42, 0.10);
+
+  --border-luminance: rgba(15, 23, 42, 0.06);
+  --border-luminance-hover: rgba(99, 102, 241, 0.2);
+
+  --glow-indigo: rgba(99, 102, 241, 0.08);
+  --glow-emerald: rgba(16, 185, 129, 0.06);
+  --glow-amber: rgba(245, 158, 11, 0.06);
+  --glow-rose: rgba(244, 63, 94, 0.06);
+}
+
+html.light-mode,
+html.light-mode body,
+.light-mode #home-directory-canvas,
+.light-mode #categories-root-desk,
+.light-mode #details-view-canvas,
+.light-mode #login-stage-canvas,
+.light-mode #cms-dashboard-canvas {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Glass card styling light-mode overrides */
+.light-mode .scholarship-card,
+.light-mode .bg-slate-950,
+.light-mode .bg-slate-950\/95,
+.light-mode .bg-slate-950\/80,
+.light-mode .bg-slate-950\/75,
+.light-mode .bg-slate-950\/70,
+.light-mode .bg-slate-950\/60,
+.light-mode .bg-slate-950\/40,
+.light-mode .bg-slate-900,
+.light-mode .bg-slate-900\/80,
+.light-mode .bg-slate-900\/70,
+.light-mode .bg-slate-900\/60,
+.light-mode .bg-slate-900\/55,
+.light-mode .bg-slate-900\/50,
+.light-mode .bg-slate-900\/40 {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Inline containers & wells overrides in light-mode */
+.light-mode .bg-slate-950\/20,
+.light-mode .bg-slate-900\/20,
+.light-mode .bg-slate-900\/30,
+.light-mode .hover\:bg-slate-900\/50:hover,
+.light-mode .bg-slate-800,
+.light-mode .bg-slate-800\/40,
+.light-mode .bg-slate-800\/80,
+.light-mode .hover\:bg-slate-800\/80:hover {
+  background-color: rgba(15, 23, 42, 0.03) !important;
+  color: #0f172a !important;
+}
+
+/* Specific inner background overrides */
+.light-mode .bg-indigo-950\/10 {
+  background-color: rgba(99, 102, 241, 0.05) !important;
+}
+.light-mode .bg-indigo-950\/20 {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+}
+.light-mode .bg-indigo-950\/45 {
+  background-color: rgba(99, 102, 241, 0.1) !important;
+  color: #4338ca !important;
+}
+.light-mode .bg-emerald-950\/40 {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  color: #059669 !important;
+}
+.light-mode .bg-purple-950\/40 {
+  background-color: rgba(168, 85, 247, 0.1) !important;
+  color: #7c3aed !important;
+}
+.light-mode .bg-amber-950\/80 {
+  background-color: #fef3c7 !important;
+  color: #b45309 !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+/* SVG Chart grid lines and lines */
+.light-mode line[stroke*="rgba(255,255,255"] {
+  stroke: rgba(15, 23, 42, 0.08) !important;
+}
+
+.light-mode .hover\:bg-slate-900\/80:hover,
+.light-mode .scholarship-card:hover {
+  background-color: rgba(241, 245, 249, 0.9) !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Glow blobs opacity in light mode */
+.light-mode .bg-indigo-500\/15 {
+  background-color: rgba(99, 102, 241, 0.06) !important;
+}
+.light-mode .bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.04) !important;
+}
+.light-mode .bg-indigo-500\/10 {
+  background-color: rgba(99, 102, 241, 0.04) !important;
+}
+
+/* Header & Nav */
+.light-mode header,
+.light-mode #scholarshiphub-sticky-header {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+.light-mode nav.bg-white\/\[0\.02\],
+.light-mode .bg-white\/\[0\.02\],
+.light-mode .md\:flex.bg-white\/\[0\.02\],
+.light-mode .flex.md\:hidden.bg-white\/\[0\.02\] {
+  background-color: rgba(15, 23, 42, 0.03) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Text overrides */
+.light-mode .text-slate-100,
+.light-mode .text-white,
+.light-mode h1,
+.light-mode h2,
+.light-mode h3,
+.light-mode h4,
+.light-mode h5 {
+  color: #0f172a !important;
+}
+
+.light-mode .text-slate-200,
+.light-mode .text-slate-300 {
+  color: #334155 !important;
+}
+
+.light-mode .text-slate-400 {
+  color: #64748b !important;
+}
+
+.light-mode .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+.light-mode .group:hover .group-hover\:text-white {
+  color: #0f172a !important;
+}
+
+/* Badges & Tags */
+.light-mode .bg-white\/\[0\.04\] {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  color: #475569 !important;
+}
+.light-mode .bg-white\/10 {
+  background-color: rgba(15, 23, 42, 0.06) !important;
+  color: #0f172a !important;
+}
+.light-mode .hover\:bg-white\/10:hover {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Transparency Utilities overrides in light-mode */
+.light-mode .bg-white\/5 {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+  color: #0f172a !important;
+}
+.light-mode .bg-white\/20 {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+.light-mode .bg-white\/30 {
+  background-color: rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+.light-mode .bg-white\/40 {
+  background-color: rgba(15, 23, 42, 0.15) !important;
+  color: #0f172a !important;
+}
+
+/* Inputs */
+.light-mode input,
+.light-mode select,
+.light-mode textarea {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+.light-mode input::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Select options dropdown color lock */
+.light-mode option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* Modal backdrop */
+.light-mode .bg-slate-950\/80 {
+  background-color: rgba(15, 23, 42, 0.3) !important;
+}
+
+/* Brand logo background in light-mode */
+.light-mode .bg-indigo-950 {
+  background-color: #e0e7ff !important;
+  color: #4338ca !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Live indicators & Alerts */
+.light-mode .bg-emerald-950\/40 {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+.light-mode .bg-indigo-950\/60 {
+  background-color: #e0e7ff !important;
+  color: #4338ca !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+.light-mode .bg-emerald-950\/50 {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+.light-mode .bg-rose-950\/65 {
+  background-color: #ffe4e6 !important;
+  color: #9f1239 !important;
+  border-color: #fda4af !important;
+}
+.light-mode .bg-rose-950\/65 mat-icon,
+.light-mode .bg-rose-950\/65 span {
+  color: #9f1239 !important;
+}
+
+/* ==========================================
+   Details Page Light Mode – Extended Fixes
+   ========================================== */
+
+/* Borders & Dividers: invert white-alpha borders to dark-alpha */
+.light-mode .border-white\/10,
+.light-mode .border-white\/15,
+.light-mode .border-white\/20 {
+  border-color: rgba(15, 23, 42, 0.10) !important;
+}
+.light-mode .divide-white\/10 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(15, 23, 42, 0.10) !important;
+}
+.light-mode .border-dashed.border-white\/20 {
+  border-color: rgba(15, 23, 42, 0.15) !important;
+}
+
+/* Indigo badge overlays on images & modal header */
+.light-mode .bg-indigo-950\/60,
+.light-mode .bg-indigo-950\/40,
+.light-mode .bg-indigo-950\/80 {
+  background-color: #e0e7ff !important;
+  color: #3730a3 !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+.light-mode .bg-indigo-950\/60 span,
+.light-mode .bg-indigo-950\/40 span,
+.light-mode .bg-indigo-950\/80 span {
+  color: #3730a3 !important;
+}
+
+/* Emerald CTA highlight box */
+.light-mode .bg-emerald-950\/50 {
+  background-color: #ecfdf5 !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+.light-mode .bg-emerald-950\/50 h3 {
+  color: #065f46 !important;
+}
+.light-mode .bg-emerald-950\/50 p {
+  color: #334155 !important;
+}
+
+/* Prose content – override prose-invert in light mode */
+.light-mode .prose-invert {
+  --tw-prose-body: #334155 !important;
+  --tw-prose-headings: #0f172a !important;
+  --tw-prose-links: #4338ca !important;
+  --tw-prose-bold: #0f172a !important;
+  --tw-prose-counters: #64748b !important;
+  --tw-prose-bullets: #94a3b8 !important;
+  --tw-prose-hr: rgba(15, 23, 42, 0.1) !important;
+  --tw-prose-quotes: #1e293b !important;
+  --tw-prose-quote-borders: rgba(99, 102, 241, 0.3) !important;
+  --tw-prose-code: #0f172a !important;
+  --tw-prose-pre-code: #e2e8f0 !important;
+  --tw-prose-pre-bg: #1e293b !important;
+  color: #334155 !important;
+}
+
+/* Indigo accent text & hover */
+.light-mode .text-indigo-400 {
+  color: #4f46e5 !important;
+}
+.light-mode .hover\:text-indigo-300:hover {
+  color: #4338ca !important;
+}
+.light-mode .text-indigo-200 {
+  color: #4338ca !important;
+}
+.light-mode .text-indigo-300 {
+  color: #4f46e5 !important;
+}
+
+/* Emerald accent text */
+.light-mode .text-emerald-400 {
+  color: #059669 !important;
+}
+.light-mode .text-emerald-500 {
+  color: #047857 !important;
+}
+
+/* Rose/deadline text */
+.light-mode .text-rose-400 {
+  color: #e11d48 !important;
+}
+.light-mode .text-rose-500 {
+  color: #be123c !important;
+}
+
+/* Step number circles */
+.light-mode .bg-indigo-950\/80 {
+  background-color: #e0e7ff !important;
+}
+.light-mode .bg-indigo-950\/80 + div h4,
+.light-mode .bg-indigo-950\/80 + div p {
+  color: #1e293b !important;
+}
+
+/* Modal dialog frosted glass in light mode */
+.light-mode .bg-slate-950\/80 {
+  background-color: rgba(15, 23, 42, 0.25) !important;
+}
+.light-mode .bg-slate-950\/95 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  color: #0f172a !important;
+}
+
+/* Modal button footer */
+.light-mode .bg-white\/\[0\.01\] {
+  background-color: rgba(15, 23, 42, 0.02) !important;
+}
+
+/* Hover state for step and related discovery cards */
+.light-mode .hover\:bg-slate-900\/70:hover {
+  background-color: rgba(241, 245, 249, 0.95) !important;
+}
+
+/* Related discovery cards */
+.light-mode .hover\:border-indigo-500\/20:hover {
+  border-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+/* List disc and step content text */
+.light-mode ul.list-disc li {
+  color: #334155 !important;
+}
+
+/* Share button group */
+.light-mode .bg-white\/\[0\.04\] svg,
+.light-mode .bg-white\/\[0\.04\] mat-icon {
+  color: #475569 !important;
+}
+.light-mode .bg-white\/\[0\.04\]:hover svg,
+.light-mode .bg-white\/\[0\.04\]:hover mat-icon {
+  color: #0f172a !important;
+}
+
+/* Light mode frost tier overrides */
+.light-mode .frost-light {
+  background: var(--frost-light-bg);
+  border-color: var(--frost-light-border);
+}
+.light-mode .frost-medium {
+  background: var(--frost-medium-bg);
+  border-color: var(--frost-medium-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+.light-mode .frost-heavy {
+  background: var(--frost-heavy-bg);
+  border-color: var(--frost-heavy-border);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.06), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+/* Light mode featured glow */
+.light-mode .featured-glow {
+  box-shadow: 0 12px 48px rgba(0,0,0,0.06), 0 0 24px rgba(245,158,11,0.08), inset 0 1px 2px rgba(255,255,255,0.8);
+  border-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+/* Light mode mesh gradient */
+.light-mode .mesh-gradient {
+  background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(16,185,129,0.04) 25%, rgba(139,92,246,0.05) 50%, rgba(6,182,212,0.03) 75%, rgba(99,102,241,0.06) 100%);
+  background-size: 400% 400%;
+}
+
+/* Light mode urgency bars */
+.light-mode .urgency-safe { background: linear-gradient(90deg, #059669, #10b981); }
+.light-mode .urgency-warning { background: linear-gradient(90deg, #d97706, #f59e0b); }
+.light-mode .urgency-danger { background: linear-gradient(90deg, #e11d48, #f43f5e); }
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.light-mode ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.1);
+}
+.light-mode ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.2);
+}
+
+/* ==========================================
+   Admin Portal Light Mode Overrides
+   ========================================== */
+
+/* WYSIWYG editor overrides in light mode */
+.light-mode .wysiwyg-content h3 {
+  color: #0f172a !important;
+  border-bottom-color: rgba(15, 23, 42, 0.1) !important;
+}
+.light-mode .wysiwyg-content li {
+  color: #334155 !important;
+}
+.light-mode .wysiwyg-content strong {
+  color: #0f172a !important;
+}
+
+/* Active and inactive provider cards overrides in light mode */
+.light-mode .border-indigo-500\/40.bg-slate-900\/60 {
+  background-color: rgba(99, 102, 241, 0.06) !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+}
+.light-mode .border-white\/10.bg-slate-950\/40 {
+  background-color: rgba(15, 23, 42, 0.02) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+.light-mode .border-white\/10.bg-slate-950\/40:hover {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Fine borders/dividers and tables overrides in light mode */
+.light-mode .border-white\/5 {
+  border-color: rgba(15, 23, 42, 0.05) !important;
+}
+.light-mode .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(15, 23, 42, 0.05) !important;
+}
+.light-mode thead tr.bg-slate-950\/60 {
+  background-color: rgba(15, 23, 42, 0.03) !important;
+  color: #334155 !important;
+}
+.light-mode tr.hover\:bg-white\/5:hover {
+  background-color: rgba(15, 23, 42, 0.02) !important;
+}
+
+/* General hover support for slate background shortcuts in light mode */
+.light-mode .hover\:bg-slate-800:hover {
+  background-color: rgba(15, 23, 42, 0.05) !important;
+  color: #0f172a !important;
+}
+.light-mode .hover\:bg-slate-700\/60:hover {
+  background-color: rgba(15, 23, 42, 0.06) !important;
+}
+.light-mode .hover\:bg-slate-900\/50:hover,
+.light-mode .hover\:bg-slate-900\/60:hover {
+  background-color: rgba(15, 23, 42, 0.05) !important;
+}
+.light-mode .hover\:bg-white\/15:hover {
+  background-color: rgba(15, 23, 42, 0.06) !important;
+}
+
+/* General border colors overrides in light mode */
+.light-mode .border-indigo-500\/40,
+.light-mode .border-indigo-500\/35,
+.light-mode .border-indigo-500\/30,
+.light-mode .border-indigo-500\/20 {
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+.light-mode .border-emerald-500\/30,
+.light-mode .border-emerald-500\/20 {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+.light-mode .border-rose-500\/30,
+.light-mode .border-rose-500\/20 {
+  border-color: rgba(244, 63, 94, 0.3) !important;
+}
+.light-mode .border-amber-500\/30,
+.light-mode .border-amber-500\/20 {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
