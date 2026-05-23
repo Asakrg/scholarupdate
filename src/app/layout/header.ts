@@ -73,11 +73,7 @@ import { ThemeService } from '../services/theme';
               </mat-icon>
             </button>
 
-            <!-- Admin Portal Link -->
-            <a routerLink="/adm" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/30 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer select-none">
-              <mat-icon class="!w-3.5 !h-3.5 !text-[14px]">admin_panel_settings</mat-icon>
-              <span>Admin Portal</span>
-            </a>
+
 
             <!-- Mobile Hamburger Button -->
             <button (click)="toggleMobileMenu()" 
@@ -118,13 +114,7 @@ import { ThemeService } from '../services/theme';
            class="block px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
           Privacy Policy
         </a>
-        <div class="pt-2 border-t border-white/5">
-          <a routerLink="/adm" (click)="closeMobileMenu()"
-             class="flex w-full items-center justify-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/30 text-white font-bold text-xs rounded-xl transition-all shadow-sm">
-            <mat-icon class="!w-4 !h-4 !text-[15px]">admin_panel_settings</mat-icon>
-            <span>Admin Portal</span>
-          </a>
-        </div>
+
       </div>
     </header>
   `
