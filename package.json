@@ -4,9 +4,11 @@
   "type": "module",
   "scripts": {
     "ng": "ng",
-    "start": "node server.js",
+    "prebuild": "node ensure-firebase-config.js",
     "build": "ng build --configuration production",
+    "prewatch": "node ensure-firebase-config.js",
     "watch": "ng build --watch --configuration development",
+    "start": "node ensure-firebase-config.js && node server.js",
     "test": "ng test",
     "lint": "eslint \"src/**/*.ts\""
   },
