@@ -94,36 +94,23 @@ function isAdminRequest(req) {
 }
 
 function getIntegrations() {
-  // 1. Check environment variables first
-  if (process.env.GA4_MEASUREMENT_ID) {
-    return {
-      ga4MeasurementId: process.env.GA4_MEASUREMENT_ID,
-      ga4PropertyId: process.env.GA4_PROPERTY_ID || '',
-      googleSiteVerification: process.env.GOOGLE_SITE_VERIFICATION || '',
-      gscSiteUrl: process.env.GSC_SITE_URL || '',
-      clientEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '',
-      privateKey: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || '',
-      geminiApiKey: process.env.GEMINI_API_KEY || ''
-    };
-  }
-
-  // 2. Check local file
+  let fileConfig = {};
   if (fs.existsSync(CONFIG_FILE)) {
     try {
-      return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+      fileConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
     } catch (e) {
       // Ignore
     }
   }
 
   return {
-    ga4MeasurementId: '',
-    ga4PropertyId: '',
-    googleSiteVerification: '',
-    gscSiteUrl: '',
-    clientEmail: '',
-    privateKey: '',
-    geminiApiKey: ''
+    ga4MeasurementId: process.env.GA4_MEASUREMENT_ID || fileConfig.ga4MeasurementId || '',
+    ga4PropertyId: process.env.GA4_PROPERTY_ID || fileConfig.ga4PropertyId || '',
+    googleSiteVerification: process.env.GOOGLE_SITE_VERIFICATION || fileConfig.googleSiteVerification || '',
+    gscSiteUrl: process.env.GSC_SITE_URL || fileConfig.gscSiteUrl || '',
+    clientEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || fileConfig.clientEmail || '',
+    privateKey: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || fileConfig.privateKey || '',
+    geminiApiKey: process.env.GEMINI_API_KEY || fileConfig.geminiApiKey || ''
   };
 }
 
