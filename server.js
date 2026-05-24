@@ -920,33 +920,37 @@ function startAutoDiscoveryLoop() {
   }, INTERVAL_MS);
 }
 
-// Initial crawler run to populate store on boot (after 5 seconds)
-setTimeout(async () => {
-  console.log('[Auto-Discovery] Running initial background crawler boot cycle...');
-  try {
-    const continent = PRESET_CONTINENTS[0];
-    const type = PRESET_TYPES[0];
-    const result = await runSearchAndScrape(continent, type);
-    const filePath = path.join(__dirname, 'auto-drafts.json');
-    let existing = [];
-    if (fs.existsSync(filePath)) {
-      try {
-        existing = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-      } catch (e) {}
-    }
-    for (const item of result.opportunities) {
-      if (!existing.some(x => x.id === item.id)) {
-        existing.push(item);
-      }
-    }
-    fs.writeFileSync(filePath, JSON.stringify(existing, null, 2), 'utf-8');
-    console.log('[Auto-Discovery] Initial boot cycle cache write successful.');
-  } catch (err) {
-    console.error('[Auto-Discovery] Initial boot cycle error:', err);
-  }
-}, 5000);
+const isVercel = process.env.VERCEL === '1' || !!process.env.VERCEL;
 
-startAutoDiscoveryLoop();
+// Initial crawler run to populate store on boot (after 5 seconds) - Skip on Serverless Vercel
+if (!isVercel) {
+  setTimeout(async () => {
+    console.log('[Auto-Discovery] Running initial background crawler boot cycle...');
+    try {
+      const continent = PRESET_CONTINENTS[0];
+      const type = PRESET_TYPES[0];
+      const result = await runSearchAndScrape(continent, type);
+      const filePath = path.join(__dirname, 'auto-drafts.json');
+      let existing = [];
+      if (fs.existsSync(filePath)) {
+        try {
+          existing = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        } catch (e) {}
+      }
+      for (const item of result.opportunities) {
+        if (!existing.some(x => x.id === item.id)) {
+          existing.push(item);
+        }
+      }
+      fs.writeFileSync(filePath, JSON.stringify(existing, null, 2), 'utf-8');
+      console.log('[Auto-Discovery] Initial boot cycle cache write successful.');
+    } catch (err) {
+      console.error('[Auto-Discovery] Initial boot cycle error:', err);
+    }
+  }, 5000);
+
+  startAutoDiscoveryLoop();
+}
 
 
 // 3. Static Files Production Deployment vs Dev Proxy Configuration
@@ -1004,6 +1008,10 @@ if (isProd) {
   });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Full-Stack Node.js App Gateway is listening actively on port ${PORT}`);
-});
+if (!isVercel) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Full-Stack Node.js App Gateway is listening actively on port ${PORT}`);
+  });
+}
+
+export default app;

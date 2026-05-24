@@ -270,7 +270,8 @@ input, select, textarea {
 }
 .marquee-track {
   display: flex;
-  gap: 3rem;
+  width: max-content;
+  gap: 1.5rem;
   animation: marquee-scroll 30s linear infinite;
   will-change: transform;
 }
