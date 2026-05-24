@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, ChangeDetectionStrategy, effect } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy, ChangeDetectionStrategy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -25,7 +25,7 @@ import { AdBannerComponent } from '../shared/ad-banner';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './details.html'
 })
-export class DetailsComponent implements OnInit {
+export class DetailsComponent implements OnInit, OnDestroy {
   public svc = inject(ScholarshipService);
   public seo = inject(SeoService);
   private route = inject(ActivatedRoute);
@@ -34,6 +34,17 @@ export class DetailsComponent implements OnInit {
   public linkCopied = signal<boolean>(false);
   public showConfirmationModal = signal<boolean>(false);
   public activeRedirectUrl = signal<string>('');
+
+  // Countdown Signals
+  public daysRemaining = signal<string>('00');
+  public hoursRemaining = signal<string>('00');
+  public minutesRemaining = signal<string>('00');
+  public secondsRemaining = signal<string>('00');
+  public isExpired = signal<boolean>(false);
+  private timerId: any = null;
+
+  // Bookmark Signal
+  public bookmarked = signal<boolean>(false);
 
   public onApplyClick(event: Event, url: string | undefined): void {
     if (!url) return;
@@ -208,6 +219,112 @@ export class DetailsComponent implements OnInit {
     return html;
   });
 
+  // Calendar event export handlers
+  public getGoogleCalendarUrl(): string {
+    const s = this.scholarship();
+    if (!s) return '#';
+    const d = new Date(s.deadline);
+    const formatDate = (date: Date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const start = formatDate(d);
+    const end = formatDate(new Date(d.getTime() + 60 * 60 * 1000));
+    const title = encodeURIComponent(`Apply: ${s.title}`);
+    const details = encodeURIComponent(`Deadline reminder for ${s.title}.\nValue: ${s.amountDisplay}.\nApply URL: ${s.applyUrl}\nDetails: ${this.getShareUrl()}`);
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}`;
+  }
+
+  public downloadCalendarFile(): void {
+    const s = this.scholarship();
+    if (!s) return;
+    const deadlineDate = new Date(s.deadline);
+    const formatDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+    
+    const startStr = formatDate(deadlineDate);
+    const endDate = new Date(deadlineDate.getTime() + 60 * 60 * 1000);
+    const endStr = formatDate(endDate);
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//ScholarshipHub//Academic Calendar//EN',
+      'BEGIN:VEVENT',
+      `UID:scholarship-${s.id}@scholarshiphub.com`,
+      `DTSTAMP:${formatDate(new Date())}`,
+      `DTSTART:${startStr}`,
+      `DTEND:${endStr}`,
+      `SUMMARY:Apply for ${s.title}`,
+      `DESCRIPTION:Reminder to submit your application for the ${s.title}. Value: ${s.amountDisplay}. Eligibility: ${s.eligibility}. Official URL: ${s.applyUrl}`,
+      `URL:${this.getShareUrl()}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `deadline-${s.id}.ics`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  // Bookmark Toggle
+  public toggleBookmark(): void {
+    const s = this.scholarship();
+    if (!s) return;
+    const newValue = !this.bookmarked();
+    this.bookmarked.set(newValue);
+    if (typeof window !== 'undefined') {
+      if (newValue) {
+        window.localStorage.setItem('bookmarked_' + s.id, 'true');
+      } else {
+        window.localStorage.removeItem('bookmarked_' + s.id);
+      }
+    }
+  }
+
+  // Live Timer Core
+  private startCountdown(deadline: string): void {
+    if (this.timerId) {
+      clearInterval(this.timerId);
+    }
+    const targetTime = new Date(deadline).getTime();
+    
+    const update = () => {
+      const now = Date.now();
+      const difference = targetTime - now;
+      if (difference <= 0) {
+        this.isExpired.set(true);
+        this.daysRemaining.set('00');
+        this.hoursRemaining.set('00');
+        this.minutesRemaining.set('00');
+        this.secondsRemaining.set('00');
+        if (this.timerId) {
+          clearInterval(this.timerId);
+        }
+        return;
+      }
+      this.isExpired.set(false);
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      this.daysRemaining.set(days.toString().padStart(2, '0'));
+      this.hoursRemaining.set(hours.toString().padStart(2, '0'));
+      this.minutesRemaining.set(minutes.toString().padStart(2, '0'));
+      this.secondsRemaining.set(seconds.toString().padStart(2, '0'));
+    };
+
+    update();
+    this.timerId = setInterval(update, 1000);
+  }
+
   public ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -218,11 +335,19 @@ export class DetailsComponent implements OnInit {
           this.svc.incrementViews(id);
           if (typeof window !== 'undefined') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            this.bookmarked.set(window.localStorage.getItem('bookmarked_' + id) === 'true');
+            this.startCountdown(match.deadline);
           }
         } else {
           this.scholarship.set(null);
         }
       }
     });
+  }
+
+  public ngOnDestroy(): void {
+    if (this.timerId) {
+      clearInterval(this.timerId);
+    }
   }
 }

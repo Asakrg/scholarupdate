@@ -86,6 +86,7 @@ import { AdBannerComponent } from '../shared/ad-banner';
             (categoryChange)="onSelectCategory($event)"
             (searchChange)="onSearchChange($event)"
             (tagClear)="clearTag()"
+            (tagSelect)="onSelectTag($event)"
             (sortChange)="onSortChange($event)" />
 
           <!-- Directory list items -->

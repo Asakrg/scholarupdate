@@ -54,6 +54,9 @@ export class CmsFormComponent {
   public isUploadingImage = signal<boolean>(false);
   public dragOverActive = signal<boolean>(false);
 
+  // Gemini Optimizer State
+  public isOptimizing = signal<boolean>(false);
+
   // Rich editor
   public editorMode = signal<'wysiwyg' | 'markdown'>('wysiwyg');
   public wysiwygHtml = signal<string>('');
@@ -190,6 +193,56 @@ export class CmsFormComponent {
       this.svc.showToast('error', 'Upload Error', 'An error occurred during image transition processing.');
     } finally {
       this.isUploadingImage.set(false);
+    }
+  }
+
+  public async optimizeDescription(): Promise<void> {
+    const desc = this.formDescription().trim();
+    if (!desc) {
+      this.svc.showToast('warning', 'Empty Description', 'Please write some description text first to let Gemini optimize it.');
+      return;
+    }
+    
+    this.isOptimizing.set(true);
+    this.formError.set(null);
+    
+    try {
+      const res = await fetch('/api/ai/optimize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.svc.currentUser()?.email}`
+        },
+        body: JSON.stringify({
+          description: desc,
+          title: this.formTitle().trim()
+        })
+      });
+      
+      if (!res.ok) {
+        throw new Error(`AI optimizer returned status ${res.status}`);
+      }
+      
+      const data = await res.json();
+      if (data.optimizedText) {
+        this.formDescription.set(data.optimizedText);
+        this.wysiwygHtml.set(this.markdownToHtml(data.optimizedText));
+        const panel = document.querySelector('.wysiwyg-content');
+        if (panel) panel.innerHTML = this.wysiwygHtml();
+        
+        if (data.warning) {
+          this.svc.showToast('info', 'Local Synthesis Fallback', data.warning);
+        } else {
+          this.svc.showToast('success', 'Optimized Successfully', 'Gemini AI has successfully cleaned, corrected, and structured your description.');
+        }
+      } else {
+        throw new Error('Invalid response structure received from optimization backend.');
+      }
+    } catch (err: any) {
+      console.error('AI optimization failed:', err);
+      this.svc.showToast('error', 'AI Optimization Failed', err?.message || 'Error occurred while calling description optimizer.');
+    } finally {
+      this.isOptimizing.set(false);
     }
   }
 

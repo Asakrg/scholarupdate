@@ -63,7 +63,7 @@ function extractPrivateKey(jsonStr: string): string {
             </h3>
           </div>
 
-          <form (submit)="saveGoogleSettings($event, ga4MeasIdInput, ga4PropIdInput, gscVerifyInput, gscSiteUrlInput, saKeyInput)" class="space-y-6">
+          <form (submit)="saveGoogleSettings($event, ga4MeasIdInput, ga4PropIdInput, gscVerifyInput, gscSiteUrlInput, saKeyInput, geminiApiKeyInput)" class="space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <label class="block text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-1">GA4 Measurement ID</label>
@@ -85,6 +85,15 @@ function extractPrivateKey(jsonStr: string): string {
                 <input type="text" #gscSiteUrlInput [value]="gscSiteUrl()" placeholder="sc-domain:ecopulse.app"
                        class="w-full px-3 py-2.5 text-xs rounded-xl border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 font-sans focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all" />
               </div>
+            </div>
+
+            <div class="border-t border-white/5 pt-4">
+              <label class="block text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-1">Google Gemini Developer API Key</label>
+              <input type="password" #geminiApiKeyInput [value]="geminiApiKey()" placeholder="AIzaSy..."
+                     class="w-full px-3 py-2.5 text-xs rounded-xl border border-white/10 bg-slate-900/60 text-slate-200 placeholder-slate-500 font-sans focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all" />
+              <p class="text-[10px] text-slate-500 mt-1 leading-relaxed">
+                Provide your Gemini Flash developer API key. This key is used in the scholarship editor overlay to automatically clean, correct grammar, and format scraped descriptions using artificial intelligence.
+              </p>
             </div>
 
             <div>
@@ -273,6 +282,7 @@ export class CmsSettingsComponent implements OnInit {
   public ga4PropertyId = signal<string>('');
   public gscVerificationToken = signal<string>('');
   public gscSiteUrl = signal<string>('');
+  public geminiApiKey = signal<string>('');
   public savingGoogle = signal<boolean>(false);
 
   public ngOnInit(): void {
@@ -286,6 +296,7 @@ export class CmsSettingsComponent implements OnInit {
       this.ga4PropertyId.set(data.ga4PropertyId || '');
       this.gscVerificationToken.set(data.googleSiteVerification || '');
       this.gscSiteUrl.set(data.gscSiteUrl || '');
+      this.geminiApiKey.set(data.geminiApiKey || '');
     } catch (e) {
       console.warn('Failed to load integrations settings', e);
     }
@@ -297,7 +308,8 @@ export class CmsSettingsComponent implements OnInit {
     propId: HTMLInputElement, 
     verifyToken: HTMLInputElement, 
     siteUrl: HTMLInputElement, 
-    privateKey: HTMLTextAreaElement
+    privateKey: HTMLTextAreaElement,
+    geminiKey: HTMLInputElement
   ): Promise<void> {
     event.preventDefault();
     this.savingGoogle.set(true);
@@ -309,7 +321,8 @@ export class CmsSettingsComponent implements OnInit {
       ga4MeasurementId: measId.value.trim(),
       ga4PropertyId: propId.value.trim(),
       googleSiteVerification: verifyToken.value.trim(),
-      gscSiteUrl: siteUrl.value.trim()
+      gscSiteUrl: siteUrl.value.trim(),
+      geminiApiKey: geminiKey.value.trim()
     };
 
     if (privateKey.value) {
@@ -319,7 +332,7 @@ export class CmsSettingsComponent implements OnInit {
 
     try {
       await this.svc.saveIntegrationsSettings(payload);
-      this.svc.showToast('success', 'Credentials Saved', 'Successfully updated Google GA4 and Search Console settings.');
+      this.svc.showToast('success', 'Credentials Saved', 'Successfully updated Google GA4, GSC and Gemini API settings.');
       privateKey.value = '';
       await this.loadGoogleSettings();
     } catch (err) {

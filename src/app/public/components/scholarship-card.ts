@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -159,13 +159,19 @@ import { Scholarship } from '../../services/scholarship';
     </article>
   `
 })
-export class ScholarshipCardComponent {
+export class ScholarshipCardComponent implements OnInit {
   @Input({ required: true }) item!: Scholarship;
   @Output() tagSelect = new EventEmitter<string>();
 
   public isShareOpen = signal<boolean>(false);
   public copied = signal<boolean>(false);
   public bookmarked = signal<boolean>(false);
+
+  public ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      this.bookmarked.set(window.localStorage.getItem('bookmarked_' + this.item.id) === 'true');
+    }
+  }
 
   public onTagClick(tag: string): void {
     this.tagSelect.emit(tag);
@@ -174,7 +180,15 @@ export class ScholarshipCardComponent {
   public toggleBookmark(event: MouseEvent): void {
     event.stopPropagation();
     event.preventDefault();
-    this.bookmarked.update(v => !v);
+    const newValue = !this.bookmarked();
+    this.bookmarked.set(newValue);
+    if (typeof window !== 'undefined') {
+      if (newValue) {
+        window.localStorage.setItem('bookmarked_' + this.item.id, 'true');
+      } else {
+        window.localStorage.removeItem('bookmarked_' + this.item.id);
+      }
+    }
   }
 
   public getUrgencyClass(): string {

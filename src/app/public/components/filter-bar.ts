@@ -36,7 +36,7 @@ import { MatIconModule } from '@angular/material/icon';
         <div class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1.5 md:pb-0 scrollbar-none">
           @for (cat of categories; track cat) {
             <button (click)="onSelectCategory(cat)"
-                    [class]="'px-4 py-2 text-xs font-semibold rounded-lg transition-all border cursor-pointer focus:outline-none whitespace-nowrap backdrop-blur-xl ' + 
+                    [class]="'px-4 py-2 text-xs font-semibold rounded-lg border cursor-pointer focus:outline-none whitespace-nowrap backdrop-blur-xl transition-all duration-200 transform hover:scale-[1.03] active:scale-[0.97] ' + 
                              (selectedCategory === cat 
                               ? 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500/30 shadow-[0_0_12px_rgba(99,102,241,0.3)]' 
                               : 'bg-slate-950/70 text-slate-300 border-white/10 hover:bg-slate-900/80 hover:border-indigo-500/30 hover:text-white')">
@@ -46,7 +46,7 @@ import { MatIconModule } from '@angular/material/icon';
         </div>
 
         <!-- Smart Input Search box (Frosted glass container) -->
-        <div class="search-expand relative w-full md:max-w-md flex items-center frost-light rounded-xl">
+        <div class="search-expand relative w-full md:max-w-md flex items-center frost-light rounded-xl transition-all duration-300">
           <span class="absolute left-3.5 text-slate-400">
             <mat-icon class="!w-4 !h-4 !text-[18px]">search</mat-icon>
           </span>
@@ -56,7 +56,7 @@ import { MatIconModule } from '@angular/material/icon';
           
           @if (searchQuery) {
             <button (click)="clearSearch()" 
-                    class="absolute right-3 text-slate-400 hover:text-white cursor-pointer focus:outline-none">
+                    class="absolute right-3 text-slate-400 hover:text-white cursor-pointer focus:outline-none transition-colors">
               <mat-icon class="!w-4 !h-4 !text-[16px]">cancel</mat-icon>
             </button>
           }
@@ -64,13 +64,29 @@ import { MatIconModule } from '@angular/material/icon';
 
       </div>
 
+      <!-- Scrollable Quick Popular Tag Pills -->
+      <div class="flex items-center gap-2 mt-4 pt-4 border-t border-white/5 select-none overflow-hidden">
+        <span class="text-[9px] font-mono uppercase font-bold text-slate-500 shrink-0">Quick tags:</span>
+        <div class="flex items-center gap-1.5 overflow-x-auto w-full scrollbar-none py-0.5">
+          @for (tag of popularTags; track tag) {
+            <button (click)="onSelectTag(tag)"
+                    [class]="'px-2.5 py-1 text-[9.5px] font-mono font-bold rounded-lg border cursor-pointer focus:outline-none whitespace-nowrap transition-all duration-200 transform hover:scale-[1.05] active:scale-[0.95] ' + 
+                             ((activeTag && activeTag.toLowerCase() === tag.toLowerCase()) 
+                              ? 'bg-indigo-600/20 text-indigo-400 border-indigo-500/40 shadow-inner' 
+                              : 'bg-white/5 text-slate-400 border-white/5 hover:bg-white/10 hover:text-slate-200 hover:border-white/10')">
+              #{{ tag }}
+            </button>
+          }
+        </div>
+      </div>
+
       <!-- Activated filter tags indicator chips -->
       @if (activeTag) {
-        <div class="flex items-center gap-2 mt-4 pt-4 border-t border-white/10">
-          <span class="text-[10px] font-mono uppercase font-bold text-slate-500">Filtering tag:</span>
-          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-950/50 backdrop-blur-xl text-indigo-200 text-[10px] font-mono font-semibold border border-indigo-500/20">
+        <div class="flex items-center gap-2 mt-3 pt-3 border-t border-white/5">
+          <span class="text-[9px] font-mono uppercase font-bold text-slate-500">Active tag filter:</span>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-950/50 backdrop-blur-xl text-indigo-200 text-[10px] font-mono font-semibold border border-indigo-500/20 animate-fade-in">
             <span>#{{ activeTag }}</span>
-            <button (click)="clearTag()" class="text-indigo-400 hover:text-indigo-200 cursor-pointer focus:outline-none">
+            <button (click)="clearTag()" class="text-indigo-400 hover:text-indigo-200 cursor-pointer focus:outline-none flex items-center justify-center">
               <mat-icon class="!w-3 !h-3 !text-[12px]">close</mat-icon>
             </button>
           </span>
@@ -89,7 +105,10 @@ export class FilterBarComponent {
   @Output() categoryChange = new EventEmitter<string>();
   @Output() searchChange = new EventEmitter<string>();
   @Output() tagClear = new EventEmitter<void>();
+  @Output() tagSelect = new EventEmitter<string>();
   @Output() sortChange = new EventEmitter<string>();
+
+  public popularTags = ['Fully Funded', 'STEM', 'USA', 'UK', 'Europe', 'Leadership', 'Research', 'Need-Based'];
 
   public onSelectCategory(cat: string): void {
     this.categoryChange.emit(cat);
@@ -102,6 +121,10 @@ export class FilterBarComponent {
 
   public clearSearch(): void {
     this.searchChange.emit('');
+  }
+
+  public onSelectTag(tag: string): void {
+    this.tagSelect.emit(tag);
   }
 
   public clearTag(): void {

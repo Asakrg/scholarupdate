@@ -41,6 +41,14 @@ html, body {
   color: #f1f5f9 !important;
 }
 
+/* Smooth theme transitions for canvas layout wrappers and interactive elements */
+html, body, #home-directory-canvas, #cms-dashboard-canvas, #details-view-canvas, aside, header, button, select, input, textarea {
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 body {
   font-family: var(--font-sans);
 }

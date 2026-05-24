@@ -84,6 +84,61 @@
 
             </div>
 
+            <!-- Premium Bouncy Live Countdown Dashboard -->
+            @if (!isExpired()) {
+              <div class="border border-white/10 bg-indigo-950/20 backdrop-blur-xl rounded-2xl p-5 mb-6 text-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 select-none animate-fade-in shadow-xl">
+                <div class="space-y-1 text-center sm:text-left">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-mono font-black bg-rose-600 text-white uppercase tracking-widest animate-pulse">
+                    <mat-icon class="!w-3 !h-3 !text-[11px] text-white">alarm</mat-icon>
+                    <span>Time Critical</span>
+                  </span>
+                  <h4 class="text-xs font-extrabold text-white mt-1">Application window closes in:</h4>
+                </div>
+                <!-- Countdown Ticker Grid -->
+                <div class="flex items-center gap-3">
+                  <!-- Days -->
+                  <div class="flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-center text-lg font-mono font-black text-indigo-400 shadow-md shadow-indigo-500/5">
+                      {{ daysRemaining() }}
+                    </div>
+                    <span class="text-[9px] font-mono text-slate-400 mt-1 uppercase">Days</span>
+                  </div>
+                  <span class="text-slate-500 font-mono text-xl mb-5">:</span>
+                  <!-- Hours -->
+                  <div class="flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-center text-lg font-mono font-black text-indigo-400 shadow-md shadow-indigo-500/5">
+                      {{ hoursRemaining() }}
+                    </div>
+                    <span class="text-[9px] font-mono text-slate-400 mt-1 uppercase">Hours</span>
+                  </div>
+                  <span class="text-slate-500 font-mono text-xl mb-5">:</span>
+                  <!-- Minutes -->
+                  <div class="flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-center text-lg font-mono font-black text-indigo-400 shadow-md shadow-indigo-500/5">
+                      {{ minutesRemaining() }}
+                    </div>
+                    <span class="text-[9px] font-mono text-slate-400 mt-1 uppercase">Mins</span>
+                  </div>
+                  <span class="text-slate-500 font-mono text-xl mb-5">:</span>
+                  <!-- Seconds -->
+                  <div class="flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-center text-lg font-mono font-black text-rose-400 shadow-md shadow-rose-500/5">
+                      {{ secondsRemaining() }}
+                    </div>
+                    <span class="text-[9px] font-mono text-slate-400 mt-1 uppercase">Secs</span>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <div class="border border-red-500/20 bg-red-950/20 backdrop-blur-xl rounded-2xl p-4 mb-6 text-slate-100 flex items-center gap-3 animate-fade-in shadow-xl">
+                <mat-icon class="!w-5 !h-5 !text-[20px] text-red-500">cancel</mat-icon>
+                <div class="space-y-0.5">
+                  <h4 class="text-xs font-extrabold text-white">Application Cycle Has Expired</h4>
+                  <p class="text-[10px] text-slate-400 font-sans">The official submission cutoff date has passed. Please browse newer active listings.</p>
+                </div>
+              </div>
+            }
+
             <!-- High-Impact Direct Apply Row (Glass styled) -->
             <div class="mb-8 flex flex-col sm:flex-row items-center gap-4 justify-between bg-emerald-950/50 border border-emerald-500/20 rounded-2xl p-5 backdrop-blur-xl">
               <div class="text-left space-y-1">
@@ -265,6 +320,36 @@
               <p class="text-[9.5px] text-center text-slate-500 font-sans leading-relaxed">
                 By clicking apply, you will be redirected to the official college composition page. Do not pay any processing fees to unofficial agents.
               </p>
+
+              <div class="border-t border-white/10 pt-4 mt-4 space-y-3">
+                <!-- Save Bookmark CTA -->
+                <button (click)="toggleBookmark()"
+                   class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer font-bold text-xs focus:outline-none select-none backdrop-blur-xl active:scale-[0.98]">
+                  <mat-icon [class]="'!w-4 !h-4 !text-[16px] bookmark-heart ' + (bookmarked() ? 'active text-rose-500' : 'text-slate-400')">
+                    {{ bookmarked() ? 'favorite' : 'favorite_border' }}
+                  </mat-icon>
+                  <span>{{ bookmarked() ? 'Saved to Bookmarks' : 'Save Scholarship' }}</span>
+                </button>
+
+                <!-- Calendar Reminders -->
+                @if (!isExpired()) {
+                  <div class="space-y-2">
+                    <span class="block text-[9px] font-mono font-bold text-slate-500 uppercase tracking-wider text-center mt-3">Calendar Integrations</span>
+                    <div class="grid grid-cols-2 gap-2">
+                      <a [href]="getGoogleCalendarUrl()" target="_blank" rel="noopener noreferrer"
+                         class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer font-semibold text-[10px] select-none focus:outline-none">
+                        <mat-icon class="!w-3.5 !h-3.5 !text-[13px] text-indigo-400">event</mat-icon>
+                        <span>Google Cal</span>
+                      </a>
+                      <button (click)="downloadCalendarFile()"
+                         class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer font-semibold text-[10px] select-none focus:outline-none active:scale-[0.98]">
+                        <mat-icon class="!w-3.5 !h-3.5 !text-[13px] text-rose-400">calendar_today</mat-icon>
+                        <span>iCal File</span>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
           </div>
 

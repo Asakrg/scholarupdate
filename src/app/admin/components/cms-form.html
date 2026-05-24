@@ -323,23 +323,33 @@
           </div>
 
           <!-- Mode Selector Tabs -->
-          <div class="flex items-center bg-slate-950/80 p-0.5 rounded-lg border border-white/10">
-            <button type="button" (click)="setEditorMode('wysiwyg')" 
-                    [ngClass]="{
-                      'bg-indigo-600 text-white shadow-md': editorMode() === 'wysiwyg',
-                      'text-slate-500 hover:text-slate-200': editorMode() !== 'wysiwyg'
-                    }"
-                    class="px-2 py-0.5 text-[10px] font-bold rounded transition-all cursor-pointer">
-              Visual Editor
+          <div class="flex items-center gap-2">
+            <!-- Gemini Optimizer Button -->
+            <button type="button" (click)="optimizeDescription()" [disabled]="isOptimizing()"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-950/80 hover:bg-indigo-905 disabled:bg-indigo-950/40 text-indigo-300 hover:text-indigo-200 disabled:text-indigo-400/50 rounded-lg text-[10px] font-mono font-bold transition-all border border-indigo-500/35 cursor-pointer shadow-sm active:scale-95 select-none focus:outline-none">
+              <mat-icon class="!w-3.5 !h-3.5 !text-[13px] text-indigo-400 animate-spin" *ngIf="isOptimizing()">sync</mat-icon>
+              <mat-icon class="!w-3.5 !h-3.5 !text-[13px] text-indigo-400" *ngIf="!isOptimizing()">auto_awesome</mat-icon>
+              <span>{{ isOptimizing() ? 'AI Refining...' : 'Gemini AI Optimize' }}</span>
             </button>
-            <button type="button" (click)="setEditorMode('markdown')"
-                    [ngClass]="{
-                      'bg-indigo-600 text-white shadow-md': editorMode() === 'markdown',
-                      'text-slate-500 hover:text-slate-200': editorMode() !== 'markdown'
-                    }"
-                    class="px-2 py-0.5 text-[10px] font-bold rounded transition-all cursor-pointer">
-              Markdown Editor
-            </button>
+
+            <div class="flex items-center bg-slate-950/80 p-0.5 rounded-lg border border-white/10">
+              <button type="button" (click)="setEditorMode('wysiwyg')" 
+                      [ngClass]="{
+                        'bg-indigo-600 text-white shadow-md': editorMode() === 'wysiwyg',
+                        'text-slate-500 hover:text-slate-200': editorMode() !== 'wysiwyg'
+                      }"
+                      class="px-2 py-0.5 text-[10px] font-bold rounded transition-all cursor-pointer">
+                Visual Editor
+              </button>
+              <button type="button" (click)="setEditorMode('markdown')"
+                      [ngClass]="{
+                        'bg-indigo-600 text-white shadow-md': editorMode() === 'markdown',
+                        'text-slate-500 hover:text-slate-200': editorMode() !== 'markdown'
+                      }"
+                      class="px-2 py-0.5 text-[10px] font-bold rounded transition-all cursor-pointer">
+                Markdown Editor
+              </button>
+            </div>
           </div>
         </div>
 
