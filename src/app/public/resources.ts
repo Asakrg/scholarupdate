@@ -6,7 +6,6 @@ import { ScholarshipService, Resource } from '../services/scholarship';
 import { SeoService } from '../services/seo';
 import { HeaderComponent } from '../layout/header';
 import { FooterComponent } from '../layout/footer';
-import { AdBannerComponent } from '../shared/ad-banner';
 
 @Component({
   selector: 'app-resources',
@@ -15,8 +14,7 @@ import { AdBannerComponent } from '../shared/ad-banner';
     RouterLink,
     MatIconModule,
     HeaderComponent,
-    FooterComponent,
-    AdBannerComponent
+    FooterComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -101,13 +99,6 @@ import { AdBannerComponent } from '../shared/ad-banner';
               </div>
 
             </div>
-
-            <!-- Ad placement -->
-            @if (isAdActive('leaderboard')) {
-              <div class="mt-8">
-                <app-ad-banner placement="leaderboard" />
-              </div>
-            }
 
           </div>
         } @else {
@@ -214,13 +205,6 @@ import { AdBannerComponent } from '../shared/ad-banner';
                       </div>
 
                     </div>
-
-                    <!-- Inject ad-banner inside feed if Ezoic/AdSense is ready -->
-                    @if (i === 2 && isAdActive('inFeed')) {
-                      <div class="col-span-full py-4">
-                        <app-ad-banner placement="inFeed" />
-                      </div>
-                    }
                   }
                 </div>
               }
@@ -295,11 +279,6 @@ export class ResourcesComponent implements OnInit {
   public currentId = signal<string | null>(null);
   public linkCopied = signal<boolean>(false);
   private lastViewedId: string | null = null;
-
-  public isAdActive(placement: 'leaderboard' | 'sidebar' | 'inFeed'): boolean {
-    const active = this.svc.adProviders().find(p => p.enabled);
-    return !!(active && active.placements[placement]);
-  }
 
   constructor() {
     effect(() => {

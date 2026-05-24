@@ -8,7 +8,6 @@ import { HeaderComponent } from '../layout/header';
 import { FooterComponent } from '../layout/footer';
 import { RedirectionModalComponent } from './components/redirection-modal';
 import { RelatedDiscoveriesComponent } from './components/related-discoveries';
-import { AdBannerComponent } from '../shared/ad-banner';
 
 @Component({
   selector: 'app-details',
@@ -19,8 +18,7 @@ import { AdBannerComponent } from '../shared/ad-banner';
     HeaderComponent,
     FooterComponent,
     RedirectionModalComponent,
-    RelatedDiscoveriesComponent,
-    AdBannerComponent
+    RelatedDiscoveriesComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './details.html'

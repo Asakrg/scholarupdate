@@ -16,7 +16,6 @@ import { ClosingSoonComponent } from './components/closing-soon';
 import { HowItWorksComponent } from './components/how-it-works';
 import { TestimonialsComponent } from './components/testimonials';
 import { NewsletterCtaComponent } from './components/newsletter-cta';
-import { AdBannerComponent } from '../shared/ad-banner';
 
 @Component({
   selector: 'app-home',
@@ -35,8 +34,7 @@ import { AdBannerComponent } from '../shared/ad-banner';
     ClosingSoonComponent,
     HowItWorksComponent,
     TestimonialsComponent,
-    NewsletterCtaComponent,
-    AdBannerComponent
+    NewsletterCtaComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -106,10 +104,6 @@ import { AdBannerComponent } from '../shared/ad-banner';
                 <app-scholarship-card 
                   [item]="item" 
                   (tagSelect)="onSelectTag($event)" />
-                
-                @if (i === 2 && isAdActive('inFeed')) {
-                  <app-ad-banner placement="inFeed" />
-                }
               }
             </div>
           }
@@ -149,11 +143,6 @@ export class HomeComponent implements OnInit {
   public searchQuery = signal<string>('');
   public activeTag = signal<string | null>(null);
   public sortBy = signal<string>('deadline');
-
-  public isAdActive(placement: 'leaderboard' | 'sidebar' | 'inFeed'): boolean {
-    const active = this.svc.adProviders().find(p => p.enabled);
-    return !!(active && active.placements[placement]);
-  }
 
   constructor() {
     effect(() => {
