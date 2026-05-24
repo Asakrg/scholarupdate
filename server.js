@@ -395,6 +395,7 @@ const getFallbackResults = (continentStr, typeStr, availableCategories) => [
 ];
 
 // Reusable Firecrawl automation routine
+// Reusable Firecrawl & Gemini Search Grounding automation routine
 async function runSearchAndScrape(continentStr, typeStr, categories = [], tags = []) {
   const availableCategories = (categories && categories.length > 0)
     ? categories 
@@ -407,11 +408,177 @@ async function runSearchAndScrape(continentStr, typeStr, categories = [], tags =
     logs.push({ time: timestamp, type, text });
   };
 
-  pushLog(`Initiating Firecrawl web search for: "${queryStr}"`, 'firecrawl');
+  const config = getIntegrations();
+  const geminiApiKey = config.geminiApiKey || process.env.GEMINI_API_KEY || '';
   const fKey = process.env.FIRECRAWL_API_KEY || '';
 
+  // 1. PRIMARY PATHWAY: Gemini 3.5/2.5 Flash with Google Search Grounding
+  if (geminiApiKey) {
+    pushLog(`Spawning Gemini Autonomous Sourcing Agent...`, 'system');
+    pushLog(`Engaging live Google Search Grounding tool for web discovery...`, 'system');
+    pushLog(`Searching for: "${queryStr}"`, 'firecrawl');
+
+    try {
+      const ScholarshipListSchema = {
+        type: 'OBJECT',
+        properties: {
+          opportunities: {
+            type: 'ARRAY',
+            description: 'List of active scholarships and academic funding opportunities discovered on the live web. Return between 3 and 5 items.',
+            items: {
+              type: 'OBJECT',
+              properties: {
+                id: { type: 'STRING', description: 'URL-safe unique identifier slug, lowercase alphanumeric and hyphens only, e.g. "oxford-clarendon-scholarships"' },
+                title: { type: 'STRING', description: 'Official name of the scholarship' },
+                excerpt: { type: 'STRING', description: '2-sentence brief summary of the opportunity' },
+                description: { type: 'STRING', description: 'Full description in markdown formatting with ## headers for Introduction, Value & Benefits, Eligibility Criteria, and How to Apply' },
+                category: { type: 'STRING', description: 'Must be exactly one of: Fully-Funded, Undergrad, Postgrad, PhD' },
+                amount: { type: 'NUMBER', description: 'Estimated numeric value in USD or equivalent' },
+                amountDisplay: { type: 'STRING', description: 'Text label for funding, e.g. "$25,000 / Year"' },
+                deadline: { type: 'STRING', description: 'Deadline in YYYY-MM-DD format. Must be a date in 2026 or 2027' },
+                applyUrl: { type: 'STRING', description: 'Official application or website URL' },
+                eligibility: { type: 'STRING', description: 'Brief candidate requirements' },
+                tags: { type: 'ARRAY', items: { type: 'STRING' } }
+              },
+              required: ['id', 'title', 'excerpt', 'description', 'category', 'amount', 'amountDisplay', 'deadline', 'applyUrl', 'eligibility']
+            }
+          }
+        },
+        required: ['opportunities']
+      };
+
+      const promptText = `Discover and compile active 2026/2027 international student funding programs, scholarships, or research grants matching these parameters:
+- Target Continent/Region: ${continentStr}
+- Opportunity Type: ${typeStr}
+
+Use your Google Search grounding tool to search the live web. Verify that these scholarships are active, exist in real universities or NGOs, and contain valid application guidelines. Output the discovered listings strictly inside the requested JSON schema. Make sure deadlines are future dates in 2026 or 2027.`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout for deep search grounding
+
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [{ text: promptText }]
+          }],
+          tools: [{
+            googleSearch: {}
+          }],
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: ScholarshipListSchema
+          }
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        throw new Error(`Gemini API returned status ${res.status}`);
+      }
+
+      const resData = await res.json();
+      const text = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (text) {
+        const parsed = JSON.parse(text.trim());
+        const rawOpportunities = parsed.opportunities || [];
+        
+        pushLog(`Gemini live search complete. Received ${rawOpportunities.length} opportunities from web grounding.`, 'system');
+
+        // Extract grounding citations
+        const citations = [];
+        const seenUris = new Set();
+        const gMeta = resData.candidates?.[0]?.groundingMetadata || {};
+
+        if (Array.isArray(gMeta.groundingChunks)) {
+          for (const chunk of gMeta.groundingChunks) {
+            if (chunk.web && chunk.web.uri) {
+              const uri = chunk.web.uri;
+              if (!seenUris.has(uri)) {
+                seenUris.add(uri);
+                citations.push({
+                  title: chunk.web.title || 'Source Reference Portal',
+                  uri: uri
+                });
+              }
+            }
+          }
+        }
+
+        if (citations.length === 0 && Array.isArray(gMeta.groundingSources)) {
+          for (const source of gMeta.groundingSources) {
+            if (source.uri) {
+              const uri = source.uri;
+              if (!seenUris.has(uri)) {
+                seenUris.add(uri);
+                citations.push({
+                  title: source.title || 'Grounded Academic Source',
+                  uri: uri
+                });
+              }
+            }
+          }
+        }
+
+        if (citations.length === 0) {
+          citations.push({
+            title: `Google Grounding Search: ${queryStr}`,
+            uri: `https://www.google.com/search?q=${encodeURIComponent(queryStr)}`
+          });
+        }
+
+        pushLog(`Extracted ${citations.length} web citations for student reference.`, 'system');
+
+        if (rawOpportunities.length > 0) {
+          const opportunitiesClean = rawOpportunities.map((opp, idx) => {
+            let img = opp.imageUrl;
+            if (!img || typeof img !== 'string' || !img.startsWith('http')) {
+              img = beautifulImages[idx % beautifulImages.length];
+            }
+            return {
+              id: opp.id ? opp.id.toLowerCase().replace(/[^a-z0-9-]/g, '-') : `gemini-${Date.now()}-${idx}`,
+              title: opp.title || 'Scholarship Opportunity',
+              excerpt: opp.excerpt || 'Scholarship opportunity discovered via live grounding search.',
+              description: opp.description || `## Introduction\nScholarship opportunity detailed from active web sources.\n\n## Value & Benefits\n- Comprehensive tuition and fee packages.\n- Dedicated travel or book allowance.\n\n## Eligibility Criteria\n- Open to qualified international students.`,
+              category: opp.category || availableCategories[0] || 'Fully-Funded',
+              amount: typeof opp.amount === 'number' ? opp.amount : 20000,
+              amountDisplay: opp.amountDisplay || '$20,000 / Year',
+              deadline: opp.deadline || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+              applyUrl: opp.applyUrl || citations[0]?.uri || 'https://google.com',
+              eligibility: opp.eligibility || 'International students meeting general criteria.',
+              status: 'draft',
+              imageUrl: img,
+              tags: Array.isArray(opp.tags) && opp.tags.length > 0 ? opp.tags : [continentStr, typeStr, 'AI-Grounded'],
+              views: Math.floor(Math.random() * 85) + 12
+            };
+          });
+
+          pushLog(`Opportunity schema normalization completed. Prepared ${opportunitiesClean.length} records.`, 'system');
+
+          return {
+            opportunities: opportunitiesClean,
+            logs,
+            citations: citations
+          };
+        }
+      }
+      pushLog(`Gemini grounding search yielded empty results. Engaging secondary scraping fallback...`, 'system');
+    } catch (err) {
+      console.error('Error in Gemini Search Grounding flow:', err);
+      pushLog(`Gemini Sourcing Agent failure: ${err.message}. Engaging secondary scraping fallback...`, 'system');
+    }
+  } else {
+    pushLog(`Gemini Developer API Key missing. Transitioning to secondary scraper layer...`, 'system');
+  }
+
+  // 2. SECONDARY PATHWAY: Firecrawl Search & JSON Schema Scrape
   if (fKey) {
-    pushLog(`Firecrawl API Key verified. Initiating search query on index...`, 'firecrawl');
+    pushLog(`Initiating Firecrawl web search for: "${queryStr}"`, 'firecrawl');
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout for deep search
@@ -485,7 +652,6 @@ async function runSearchAndScrape(continentStr, typeStr, categories = [], tags =
             jsonOptions: {
               schema: ScholarshipListSchema
             },
-            // Enable Firecrawl's browser actions to scroll and let scripts load fully
             actions: [
               { type: 'wait', milliseconds: 3000 },
               { type: 'scroll', direction: 'down' },
@@ -527,7 +693,7 @@ async function runSearchAndScrape(continentStr, typeStr, categories = [], tags =
                 eligibility: opp.eligibility || 'International students meeting standard criteria.',
                 status: 'draft',
                 imageUrl: img,
-                tags: Array.isArray(opp.tags) && opp.tags.length > 0 ? opp.tags : [continentStr, typeStr],
+                tags: Array.isArray(opp.tags) && opp.tags.length > 0 ? opp.tags : [continentStr, typeStr, 'Firecrawl'],
                 views: Math.floor(Math.random() * 85) + 12
               };
             });
@@ -544,9 +710,9 @@ async function runSearchAndScrape(continentStr, typeStr, categories = [], tags =
             };
           }
         }
-        pushLog(`Structured scrape did not yield direct JSON opportunities. Falling back...`, 'system');
+        pushLog(`Structured scrape did not yield direct JSON opportunities. Engaging fallback...`, 'system');
       } else {
-        pushLog(`Firecrawl search did not return any indexed pages for this query. Falling back...`, 'system');
+        pushLog(`Firecrawl search did not return any indexed pages for this query. Engaging fallback...`, 'system');
       }
     } catch (err) {
       console.error('Error in Firecrawl search/scrape flow:', err);
@@ -556,7 +722,7 @@ async function runSearchAndScrape(continentStr, typeStr, categories = [], tags =
     pushLog(`Firecrawl API Key missing in environment settings. Engaging offline mockup generator...`, 'system');
   }
 
-  // Fallback pathway
+  // 3. TERTIARY FALLBACK: Local High-Fidelity Mockup Generation
   pushLog(`Compiling high-fidelity academic opportunities for: "${continentStr}"...`, 'system');
   const normalizedFallback = getFallbackResults(continentStr, typeStr, availableCategories);
   pushLog(`Successfully synthesized ${normalizedFallback.length} mock opportunities.`, 'system');
